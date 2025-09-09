@@ -111,25 +111,7 @@ if [[ -n "$GATEWAY_MYCELIUM_IP" && "$GATEWAY_MYCELIUM_IP" != "null" && "$GATEWAY
     fi
 fi
 
-echo ""
-echo -e "${YELLOW}Testing Mycelium service status...${NC}"
-
-# Test Mycelium service on gateway VM via SSH
-echo -n "Gateway Mycelium service: "
-if ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@"$GATEWAY_WG_IP" "systemctl is-active mycelium" >/dev/null 2>&1; then
-    echo -e "${GREEN}✓ Active${NC}"
-else
-    echo -e "${RED}✗ Inactive${NC}"
-fi
-
-# Test Mycelium IP assignment on gateway VM
-echo -n "Gateway Mycelium IP: "
-MYCELIUM_STATUS=$(ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@"$GATEWAY_WG_IP" "ip -6 addr show mycelium 2>/dev/null | grep inet6 | awk '{print \$2}' | cut -d'/' -f1" 2>/dev/null || echo "")
-if [[ -n "$MYCELIUM_STATUS" ]]; then
-    echo -e "${GREEN}✓ $MYCELIUM_STATUS${NC}"
-else
-    echo -e "${RED}✗ No IP assigned${NC}"
-fi
+# Mycelium connectivity is validated by IPv6 ping and SSH tests above
 
 echo ""
 echo -e "${GREEN}Connectivity test completed${NC}"
