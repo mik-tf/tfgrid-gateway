@@ -93,30 +93,42 @@ fi
 echo ""
 echo -e "${YELLOW}Testing SSH connectivity...${NC}"
 
-# Test SSH to gateway
-echo -n "SSH to Gateway: "
+# Test SSH to gateway via WireGuard
+echo -n "SSH to Gateway (WireGuard): "
 if ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@"$GATEWAY_WG_IP" "echo 'SSH OK'" >/dev/null 2>&1; then
     echo -e "${GREEN}✓ SSH OK${NC}"
 else
     echo -e "${RED}✗ SSH Failed${NC}"
 fi
 
-# Test Mycelium connectivity if available
-echo ""
-echo -e "${YELLOW}Testing Mycelium connectivity...${NC}"
-if command -v mycelium >/dev/null 2>&1; then
-    if sudo mycelium inspect --json >/dev/null 2>&1; then
-        MYCELIUM_IP=$(sudo mycelium inspect --json | jq -r .address 2>/dev/null || echo "")
-        if [[ -n "$MYCELIUM_IP" && "$MYCELIUM_IP" != "null" ]]; then
-            echo -e "${GREEN}✓ Mycelium active: $MYCELIUM_IP${NC}"
-        else
-            echo -e "${YELLOW}⚠ Mycelium running but no IP assigned${NC}"
-        fi
+# Test SSH to gateway via Mycelium IPv6 (if gateway has Mycelium IP)
+if [[ -n "$GATEWAY_MYCELIUM_IP" && "$GATEWAY_MYCELIUM_IP" != "null" && "$GATEWAY_MYCELIUM_IP" != "N/A" ]]; then
+    echo -n "SSH to Gateway (Mycelium): "
+    if ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@"$GATEWAY_MYCELIUM_IP" "echo 'SSH OK'" >/dev/null 2>&1; then
+        echo -e "${GREEN}✓ SSH OK${NC}"
     else
-        echo -e "${RED}✗ Mycelium command failed${NC}"
+        echo -e "${RED}✗ SSH Failed${NC}"
     fi
+fi
+
+echo ""
+echo -e "${YELLOW}Testing Mycelium service status...${NC}"
+
+# Test Mycelium service on gateway VM via SSH
+echo -n "Gateway Mycelium service: "
+if ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@"$GATEWAY_WG_IP" "systemctl is-active mycelium" >/dev/null 2>&1; then
+    echo -e "${GREEN}✓ Active${NC}"
 else
-    echo -e "${YELLOW}⚠ Mycelium not available locally${NC}"
+    echo -e "${RED}✗ Inactive${NC}"
+fi
+
+# Test Mycelium IP assignment on gateway VM
+echo -n "Gateway Mycelium IP: "
+MYCELIUM_STATUS=$(ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@"$GATEWAY_WG_IP" "ip -6 addr show mycelium 2>/dev/null | grep inet6 | awk '{print \$2}' | cut -d'/' -f1" 2>/dev/null || echo "")
+if [[ -n "$MYCELIUM_STATUS" ]]; then
+    echo -e "${GREEN}✓ $MYCELIUM_STATUS${NC}"
+else
+    echo -e "${RED}✗ No IP assigned${NC}"
 fi
 
 echo ""
