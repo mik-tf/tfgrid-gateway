@@ -48,7 +48,7 @@ configure:
 # Connect to gateway
 connect:
 	@echo "Connecting to gateway VM..."
-	@GATEWAY_IP=$$(cd infrastructure && tofu output -json gateway_public_ip 2>/dev/null | jq -r . 2>/dev/null || echo ""); \
+	@GATEWAY_IP=$$(cd infrastructure && tofu output -json gateway_public_ip 2>/dev/null | jq -r . 2>/dev/null | sed 's|/.*||' || echo ""); \
 	if [[ -z "$$GATEWAY_IP" || "$$GATEWAY_IP" == "null" ]]; then \
 		echo "Gateway IP not found. Have you deployed infrastructure yet?"; \
 		echo "Run 'make infrastructure' first."; \
