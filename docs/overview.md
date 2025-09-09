@@ -108,85 +108,267 @@ These configurations enable **load distribution** across multiple internal hosts
 
 ### 4.1 Deploying WireGuard on ThreeFold Grid
 
-**WireGuard** provides a secure VPN solution that can be integrated with ThreeFold Grid deployments. The Terraform configuration below sets up a WireGuard-based gateway between VMs:
+**WireGuard** provides a secure VPN solution that can be integrated with ThreeFold Grid deployments. The Terraform configuration below sets up a WireGuard-based gateway network between VMs with automated key generation and configuration:
 
 ```hcl
-resource "grid_network" "net1" {
-  name        = "wg-gateway"
-  nodes       = [var.tfnodeid1, var.tfnodeid2]
-  ip_range    = "10.1.0.0/16"
-  description = "WireGuard gateway network"
-  add_wg_access = true  # Enable WireGuard access
+terraform {
+  required_providers {
+    grid = {
+      source = "threefoldtech/grid"
+    }
+  }
 }
 
+# Variables
+variable "mnemonic" {
+  type        = string
+  sensitive   = true
+  description = "ThreeFold mnemonic for authentication"
+}
+
+variable "gateway_node" { type = number }
+variable "internal_nodes" { type = list(number) }
+variable "SSH_KEY" {
+  type        = string
+  default     = null
+  description = "SSH public key content"
+}
+
+provider "grid" {
+  mnemonic  = var.mnemonic
+  network   = "main"
+  relay_url = "wss://relay.grid.tf"
+}
+
+# Generate unique mycelium keys/seeds for all nodes
+locals {
+  all_nodes = concat([var.gateway_node], var.internal_nodes)
+}
+
+# WireGuard overlay network with Mycelium integration
+resource "grid_network" "gateway_network" {
+  name          = "gateway_net"
+  nodes         = local.all_nodes
+  ip_range      = "10.1.0.0/16"
+  add_wg_access = true
+  mycelium_keys = {
+    for node in local.all_nodes : tostring(node) => random_bytes.mycelium_key[tostring(node)].hex
+  }
+}
+
+resource "random_bytes" "mycelium_key" {
+  for_each = toset([for n in local.all_nodes : tostring(n)])
+  length   = 32
+}
+
+# Gateway VM with public IPv4
 resource "grid_deployment" "gateway" {
-  name         = "wg-gateway"
-  node         = var.tfnodeid1
-  network_name = grid_network.net1.name
+  node         = var.gateway_node
+  network_name = grid_network.gateway_network.name
+
   vms {
-    name       = "gateway-vm"
-    flist      = "https://hub.grid.tf/tf-official-vms/ubuntu-22.04.flist"
-    cpu        = 2
-    memory     = 4096
+    name             = "gateway-vm"
+    flist            = "https://hub.grid.tf/tf-official-vms/ubuntu-24.04-full.flist"
+    cpu              = 2
+    memory           = 4096
+    entrypoint       = "/sbin/zinit init"
+    publicip         = true
+    mycelium_ip_seed = random_bytes.gateway_ip_seed.hex
+
     env_vars = {
-      SSH_KEY = var.SSH_KEY
+      SSH_KEY = var.SSH_KEY != null ? var.SSH_KEY : (
+        fileexists(pathexpand("~/.ssh/id_ed25519.pub")) ?
+        file(pathexpand("~/.ssh/id_ed25519.pub")) :
+        file(pathexpand("~/.ssh/id_rsa.pub"))
+      )
     }
-    publicip   = true  # Request public IPv4
-    planetary = true   # Enable Mycelium Network
+    rootfs_size = 20480
   }
 }
 
-resource "grid_deployment" "internal_vm" {
-  name         = "internal-vm"
-  node         = var.tfnodeid2
-  network_name = grid_network.net1.name
+resource "random_bytes" "gateway_ip_seed" {
+  length = 6
+}
+
+# Internal VMs without public IPv4
+resource "grid_deployment" "internal_vms" {
+  for_each = toset([for n in var.internal_nodes : tostring(n)])
+
+  node         = each.value
+  network_name = grid_network.gateway_network.name
+
   vms {
-    name       = "internal-vm"
-    flist      = "https://hub.grid.tf/tf-official-vms/ubuntu-22.04.flist"
-    cpu        = 2
-    memory     = 2048
+    name             = "internal-vm-${each.key}"
+    flist            = "https://hub.grid.tf/tf-official-vms/ubuntu-24.04-full.flist"
+    cpu              = 2
+    memory           = 2048
+    entrypoint       = "/sbin/zinit init"
+    publicip         = false
+    mycelium_ip_seed = random_bytes.internal_ip_seed[each.key].hex
+
     env_vars = {
-      SSH_KEY = var.SSH_KEY
+      SSH_KEY = var.SSH_KEY != null ? var.SSH_KEY : (
+        fileexists(pathexpand("~/.ssh/id_ed25519.pub")) ?
+        file(pathexpand("~/.ssh/id_ed25519.pub")) :
+        file(pathexpand("~/.ssh/id_rsa.pub"))
+      )
     }
-    planetary = true   # Enable Mycelium but no public IPv4
+    rootfs_size = 10240
+  }
+}
+
+resource "random_bytes" "internal_ip_seed" {
+  for_each = toset([for n in var.internal_nodes : tostring(n)])
+  length   = 6
+}
+
+# Outputs
+output "gateway_public_ip" {
+  value       = grid_deployment.gateway.vms[0].computedip
+  description = "Public IPv4 address of the gateway VM"
+}
+
+output "gateway_wireguard_ip" {
+  value       = grid_deployment.gateway.vms[0].ip
+  description = "WireGuard IP of the gateway VM"
+}
+
+output "internal_wireguard_ips" {
+  value = {
+    for key, dep in grid_deployment.internal_vms :
+    key => dep.vms[0].ip
+  }
+  description = "WireGuard IPs of internal VMs"
+}
+
+output "wg_config" {
+  value = grid_network.gateway_network.access_wg_config
+}
+
+output "mycelium_ips" {
+  value = {
+    gateway = grid_deployment.gateway.vms[0].mycelium_ip
+    internal = {
+      for key, dep in grid_deployment.internal_vms :
+      key => dep.vms[0].mycelium_ip
+    }
   }
 }
 ```
 
-This configuration creates a **virtual private network** with WireGuard access, allowing secure connectivity between the gateway VM with public IPv4 and internal VMs without public IPv4 .
+This configuration creates a **production-ready virtual private network** with WireGuard access and Mycelium integration, allowing secure connectivity between the gateway VM with public IPv4 and internal VMs without public IPv4. The setup includes automated key generation and comprehensive outputs for easy access.
 
-### 4.2 Configuring WireGuard Tunnel Interface
+### 4.2 Automated WireGuard Configuration with Scripts
 
-After deployment, extract the **WireGuard configuration** from Terraform outputs:
+After deployment, use the automated WireGuard setup script to configure secure tunnels:
 
 ```bash
-# Create WireGuard configuration file
-mkdir -p /etc/wireguard/
-terraform output wg_config > /etc/wireguard/wg0.conf
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Start WireGuard interface
-wg-quick up wg0
+# Check dependencies
+command -v jq >/dev/null 2>&1 || {
+    echo >&2 "ERROR: jq required but not found. Install with:
+    sudo apt install jq || brew install jq";
+    exit 1;
+}
+
+command -v tofu >/dev/null 2>&1 || {
+    echo >&2 "ERROR: tofu (OpenTofu) required but not found.";
+    exit 1;
+}
+
+command -v wg-quick >/dev/null 2>&1 || {
+    echo >&2 "ERROR: wg-quick required but not found. Install WireGuard.";
+    exit 1;
+}
+
+# Get script directory
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+DEPLOYMENT_DIR="$SCRIPT_DIR/../infrastructure"
+
+# Fetch IP addresses and WireGuard config from Terraform outputs
+echo "Fetching IP addresses and WireGuard config from Terraform..."
+terraform_output=$(tofu -chdir="$DEPLOYMENT_DIR" show -json)
+
+# Extract WireGuard configuration
+wg_config=$(jq -r '.values.outputs.wg_config.value' <<< "$terraform_output")
+
+# Write WireGuard configuration to a file
+WG_CONFIG_FILE="/etc/wireguard/gateway.conf"
+echo "$wg_config" | sudo tee "$WG_CONFIG_FILE" > /dev/null
+
+# Bring down the WireGuard interface if it's up
+sudo wg-quick down gateway 2>/dev/null || true
+
+# Bring up the WireGuard interface
+sudo wg-quick up gateway
+
+# Remove known_hosts to avoid SSH key conflicts
+sudo rm -f ~/.ssh/known_hosts
+
+echo "WireGuard setup completed!"
 ```
 
-The generated configuration includes **secure key pairs** and **peer definitions** that establish an encrypted tunnel between the gateway VM and internal VMs, enabling **secure access** to internal resources .
+The generated configuration includes **secure key pairs** and **peer definitions** that establish an encrypted tunnel between the gateway VM and internal VMs, enabling **secure access** to internal resources without exposing them to the public internet.
 
-### 4.3 Routing Traffic Through WireGuard
+### 4.3 Routing Traffic Through WireGuard Gateway
 
-With WireGuard established, configure **routing rules** to direct traffic through the tunnel:
+With WireGuard established, configure **comprehensive routing and NAT rules** to direct traffic through the gateway:
 
 ```bash
-# Enable IP forwarding
+# Enable IP forwarding for both IPv4 and IPv6
 sysctl -w net.ipv4.ip_forward=1
 sysctl -w net.ipv6.conf.all.forwarding=1
 
-# Add NAT rules for WireGuard traffic
-nft add rule ip nat postrouting oifname "wg0" masquerade
+# Create comprehensive NAT table for gateway
+nft add table inet gateway_nat
+nft add chain inet gateway_nat prerouting { type nat hook prerouting priority -100; }
+nft add chain inet gateway_nat postrouting { type nat hook postrouting priority 100; }
+
+# Enable masquerading for outbound traffic from internal network
+nft add rule inet gateway_nat postrouting ip saddr 10.1.0.0/16 oifname "eth0" masquerade
+
+# Port forwarding rules for common services
+nft add rule inet gateway_nat prerouting iifname "eth0" tcp dport 80 dnat ip to 10.1.0.10:80
+nft add rule inet gateway_nat prerouting iifname "eth0" tcp dport 443 dnat ip to 10.1.0.10:443
+nft add rule inet gateway_nat prerouting iifname "eth0" tcp dport 22 dnat ip to 10.1.0.20:22
+
+# Allow established connections
+nft add rule inet gateway_nat prerouting ct state established,related accept
 
 # Route specific subnets through WireGuard
-ip route add 10.1.0.0/16 dev wg0
+ip route add 10.1.0.0/16 dev gateway
+
+# Configure firewall for secure gateway operation
+nft add table inet firewall
+nft add chain inet firewall input { type filter hook input priority 0; policy drop; }
+nft add chain inet firewall forward { type filter hook forward priority 0; policy drop; }
+
+# Allow SSH from specific networks
+nft add rule inet firewall input iifname "eth0" tcp dport 22 ip saddr { 192.168.1.0/24, 10.0.0.0/8 } accept
+
+# Allow HTTP/HTTPS from anywhere
+nft add rule inet firewall input tcp dport { 80, 443 } accept
+
+# Allow WireGuard traffic
+nft add rule inet firewall input udp dport 51820 accept
+nft add rule inet firewall input iifname "gateway" accept
+
+# Allow forwarding between interfaces
+nft add rule inet firewall forward iifname "gateway" oifname "eth0" accept
+nft add rule inet firewall forward iifname "eth0" oifname "gateway" ct state established,related accept
+
+# Allow loopback and established connections
+nft add rule inet firewall input iifname "lo" accept
+nft add rule inet firewall input ct state established,related accept
+
+# Log dropped packets for monitoring
+nft add rule inet firewall input log prefix "Dropped input: " drop
+nft add rule inet firewall forward log prefix "Dropped forward: " drop
 ```
 
-This setup allows the gateway VM to **securely forward** traffic from the public internet to internal VMs through the encrypted WireGuard tunnel .
+This setup allows the gateway VM to **securely forward** traffic from the public internet to internal VMs through the encrypted WireGuard tunnel while maintaining comprehensive security through firewall rules and NAT configuration.
 
 ## 5. Leveraging Mycelium for Secure IPv6 Communication
 
@@ -194,51 +376,202 @@ This setup allows the gateway VM to **securely forward** traffic from the public
 
 **Mycelium** is ThreeFold's end-to-end encrypted IPv6 overlay network that replaces the earlier Yggdrasil implementation. Key features include:
 
-- **End-to-end encryption**: All traffic is automatically encrypted between nodes 
-- **Cryptographic addressing**: IPv6 addresses are derived from node key pairs 
-- **Locality awareness**: Finds the shortest path between nodes based on latency 
-- **Self-healing routing**: Automatically reroutes traffic if links fail 
+- **End-to-end encryption**: All traffic is automatically encrypted between nodes
+- **Cryptographic addressing**: IPv6 addresses are derived from node key pairs
+- **Locality awareness**: Finds the shortest path between nodes based on latency
+- **Self-healing routing**: Automatically reroutes traffic if links fail
+- **Production ready**: Designed for scalability and reliability in enterprise environments
 
-Mycelium addresses the scalability limitations of Yggdrasil while maintaining backward compatibility with the core concepts of encrypted overlay networking .
+Mycelium addresses the scalability limitations of Yggdrasil while maintaining backward compatibility with the core concepts of encrypted overlay networking. It's specifically designed for ThreeFold Grid deployments and integrates seamlessly with the grid's infrastructure.
 
-### 5.2 Enabling Mycelium on ThreeFold Grid VMs
+### 5.2 Production-Ready Mycelium Configuration on ThreeFold Grid
 
-When deploying VMs on ThreeFold Grid, enable the **Mycelium** option in the network configuration:
+The following Terraform configuration demonstrates a **production-ready Mycelium setup** with automated key generation, IP seed management, and comprehensive outputs:
 
 ```hcl
-vms {
-  name       = "mycelium-gateway"
-  flist      = "https://hub.grid.tf/tf-official-vms/ubuntu-22.04.flist"
-  cpu        = 2
-  memory     = 2048
-  planetary  = true  # Enable Mycelium network
+# Generate unique mycelium keys for all nodes
+resource "random_bytes" "mycelium_key" {
+  for_each = toset([for n in local.all_nodes : tostring(n)])
+  length   = 32
 }
 
-vms {
-  name       = "internal-vm"
-  flist      = "https://hub.grid.tf/tf-official-vms/ubuntu-22.04.flist"
-  cpu        = 2
-  memory     = 2048
-  planetary  = true  # Enable Mycelium network
-  # No public IPv4 address
+resource "random_bytes" "gateway_ip_seed" {
+  length = 6
+}
+
+resource "random_bytes" "internal_ip_seed" {
+  for_each = toset([for n in var.internal_nodes : tostring(n)])
+  length   = 6
+}
+
+# Mycelium-enabled network
+resource "grid_network" "gateway_network" {
+  name          = "gateway_net"
+  nodes         = local.all_nodes
+  ip_range      = "10.1.0.0/16"
+  add_wg_access = true
+  mycelium_keys = {
+    for node in local.all_nodes : tostring(node) => random_bytes.mycelium_key[tostring(node)].hex
+  }
+}
+
+# Gateway VM with Mycelium
+resource "grid_deployment" "gateway" {
+  node         = var.gateway_node
+  network_name = grid_network.gateway_network.name
+
+  vms {
+    name             = "gateway-vm"
+    flist            = "https://hub.grid.tf/tf-official-vms/ubuntu-24.04-full.flist"
+    cpu              = 2
+    memory           = 4096
+    entrypoint       = "/sbin/zinit init"
+    publicip         = true
+    mycelium_ip_seed = random_bytes.gateway_ip_seed.hex
+
+    env_vars = {
+      SSH_KEY = var.SSH_KEY != null ? var.SSH_KEY : (
+        fileexists(pathexpand("~/.ssh/id_ed25519.pub")) ?
+        file(pathexpand("~/.ssh/id_ed25519.pub")) :
+        file(pathexpand("~/.ssh/id_rsa.pub"))
+      )
+    }
+    rootfs_size = 20480
+  }
+}
+
+# Internal VMs with Mycelium (no public IPv4)
+resource "grid_deployment" "internal_vms" {
+  for_each = toset([for n in var.internal_nodes : tostring(n)])
+
+  node         = each.value
+  network_name = grid_network.gateway_network.name
+
+  vms {
+    name             = "internal-vm-${each.key}"
+    flist            = "https://hub.grid.tf/tf-official-vms/ubuntu-24.04-full.flist"
+    cpu              = 2
+    memory           = 2048
+    entrypoint       = "/sbin/zinit init"
+    publicip         = false
+    mycelium_ip_seed = random_bytes.internal_ip_seed[each.key].hex
+
+    env_vars = {
+      SSH_KEY = var.SSH_KEY != null ? var.SSH_KEY : (
+        fileexists(pathexpand("~/.ssh/id_ed25519.pub")) ?
+        file(pathexpand("~/.ssh/id_ed25519.pub")) :
+        file(pathexpand("~/.ssh/id_rsa.pub"))
+      )
+    }
+    rootfs_size = 10240
+  }
+}
+
+# Comprehensive outputs for Mycelium management
+output "mycelium_ips" {
+  value = {
+    gateway = grid_deployment.gateway.vms[0].mycelium_ip
+    internal = {
+      for key, dep in grid_deployment.internal_vms :
+      key => dep.vms[0].mycelium_ip
+    }
+  }
+  description = "Mycelium IPv6 addresses for all VMs"
+}
+
+output "gateway_mycelium_ip" {
+  value       = grid_deployment.gateway.vms[0].mycelium_ip
+  description = "Mycelium IP of the gateway VM"
+}
+
+output "internal_mycelium_ips" {
+  value = {
+    for key, dep in grid_deployment.internal_vms :
+    key => dep.vms[0].mycelium_ip
+  }
+  description = "Mycelium IPs of internal VMs"
 }
 ```
 
-This enables the **Mycelium networking stack** on both VMs, providing them with **cryptographic IPv6 addresses** in the 400::/7 range that remain persistent and reachable through the Mycelium network .
+This configuration creates a **robust Mycelium network** with:
+- **Automated key generation** for each node
+- **Deterministic IP addressing** through seeds
+- **Dual connectivity** (WireGuard + Mycelium)
+- **Comprehensive outputs** for network management
 
-### 5.3 Gateway Services over Mycelium
+### 5.3 Advanced Gateway Services over Mycelium
 
-With Mycelium enabled, services can be exposed directly through the **encrypted overlay network** without needing public IPv4 addresses:
+With Mycelium enabled, services can be exposed through the **encrypted overlay network** with production-grade reliability:
 
 ```bash
-# On internal VM: Start web server listening on Mycelium address
-python3 -m http.server 8080 --bind $(mycelium inspect --json | jq -r .address)
+# On internal VM: Configure services to listen on Mycelium address
+# Get the Mycelium IP address
+MYCELIUM_IP=$(mycelium inspect --json | jq -r .address)
+echo "Internal VM Mycelium IP: $MYCELIUM_IP"
 
-# On gateway VM: Set up DNAT from IPv4 to Mycelium IPv6
-nft add rule inet nat prerouting iif eth0 tcp dport 80 dnat ip6 to 400::100:0:0:1:8080
+# Start web server listening on Mycelium address
+python3 -m http.server 8080 --bind $MYCELIUM_IP
+
+# Start database server on Mycelium
+mysqld --bind-address=$MYCELIUM_IP --port=3306
+
+# On gateway VM: Set up advanced NAT from IPv4 to Mycelium IPv6
+# First, get the internal VM's Mycelium IP from Terraform outputs
+INTERNAL_MYCELIUM_IP=$(tofu -chdir=../infrastructure output -json internal_mycelium_ips | jq -r '.node_2000')
+
+# Configure dual-stack NAT rules
+nft add table inet gateway_nat
+nft add chain inet gateway_nat prerouting { type nat hook prerouting priority -100; }
+nft add chain inet gateway_nat postrouting { type nat hook postrouting priority 100; }
+
+# Port forwarding with IPv4 to IPv6 translation
+nft add rule inet gateway_nat prerouting iif eth0 tcp dport 80 dnat ip6 to $INTERNAL_MYCELIUM_IP:8080
+nft add rule inet gateway_nat prerouting iif eth0 tcp dport 443 dnat ip6 to $INTERNAL_MYCELIUM_IP:8443
+nft add rule inet gateway_nat prerouting iif eth0 tcp dport 3306 dnat ip6 to $INTERNAL_MYCELIUM_IP:3306
+
+# Enable IPv6 forwarding for Mycelium traffic
+sysctl -w net.ipv6.conf.all.forwarding=1
+
+# Add routing rules for Mycelium subnets
+ip -6 route add 400::/7 dev mycelium 2>/dev/null || true
+
+# Configure firewall for Mycelium traffic
+nft add rule inet firewall input iifname "mycelium" accept
+nft add rule inet firewall forward iifname "eth0" oifname "mycelium" accept
+nft add rule inet firewall forward iifname "mycelium" oifname "eth0" ct state established,related accept
 ```
 
-This approach enables **secure exposure** of services running on IPv6-only VMs to the public IPv4 internet through the gateway VM, with all traffic between VMs protected by Mycelium's end-to-end encryption .
+### 5.4 Mycelium Network Monitoring and Troubleshooting
+
+Monitor and troubleshoot your Mycelium network with these commands:
+
+```bash
+# Check Mycelium status on any node
+mycelium inspect --json
+
+# View detailed peer information
+mycelium peers
+
+# Check routing table
+mycelium routes
+
+# Test connectivity between nodes
+ping6 $(tofu -chdir=../infrastructure output -json internal_mycelium_ips | jq -r '.node_2000')
+
+# Monitor Mycelium traffic (if available)
+mycelium stats
+
+# Restart Mycelium service if needed
+sudo systemctl restart mycelium
+
+# Check Mycelium logs
+journalctl -u mycelium -f
+
+# Verify key configuration
+mycelium inspect | grep -A 5 "Key"
+```
+
+This approach enables **secure, production-ready exposure** of services running on IPv6-only VMs to the public IPv4 internet through the gateway VM, with all traffic between VMs protected by Mycelium's end-to-end encryption and self-healing routing capabilities.
 
 ## 6. Proxy-Based Gateway Implementations
 
