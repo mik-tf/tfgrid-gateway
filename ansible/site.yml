@@ -12,15 +12,15 @@
   hosts: internal
   become: yes
   roles:
-    - role: internal_common
+    - role: gateway_common
       tags: [common]
-    - role: internal_services
-      tags: [services]
 
 - name: Setup Testing Infrastructure
   hosts: all
   become: yes
-  roles:
-    - role: testing
+  tasks:
+    - name: Include testing role when enabled
+      include_role:
+        name: testing
       tags: [test]
-  when: enable_testing | default(false)
+      when: enable_testing | default(false)

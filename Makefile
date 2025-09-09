@@ -76,7 +76,7 @@ inventory:
 # Configure with Ansible
 ansible:
 	@echo "Configuring gateway with Ansible..."
-	@cd ansible && ansible-playbook -i inventory.ini site.yml
+	@cd ansible && ansible-playbook -i inventory.ini --extra-vars "gateway_type=${GATEWAY_TYPE:-gateway_nat}" site.yml
 
 # Test with Ansible
 ansible-test:
