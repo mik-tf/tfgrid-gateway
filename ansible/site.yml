@@ -20,6 +20,7 @@
     - role: vm_demo
       tags: [vm-demo]
       when: enable_vm_demo | default(false)
+  when: configure_internal_vms | default(false)
 
 - name: Setup Testing Infrastructure
   hosts: all

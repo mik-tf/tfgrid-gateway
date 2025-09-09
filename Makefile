@@ -91,7 +91,7 @@ inventory:
 # Configure with Ansible
 ansible:
 	@echo "Configuring gateway with Ansible..."
-	@cd ansible && ansible-playbook -i inventory.ini --extra-vars "gateway_type=${GATEWAY_TYPE:-gateway_nat}" site.yml
+	@cd ansible && ansible-playbook -i inventory.ini --extra-vars "gateway_type=${GATEWAY_TYPE:-gateway_nat} configure_internal_vms=false" site.yml
 
 # Test with Ansible
 ansible-test:

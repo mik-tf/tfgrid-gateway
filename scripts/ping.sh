@@ -15,15 +15,15 @@ INFRASTRUCTURE_DIR="$PROJECT_DIR/infrastructure"
 echo -e "${GREEN}Testing connectivity to ThreeFold Grid Gateway VMs${NC}"
 echo "==================================================="
 
-# Check if WireGuard is active
-if ! wg show gateway >/dev/null 2>&1; then
+# Check if WireGuard is active (use sudo since wg interface requires root)
+if ! sudo wg show gateway >/dev/null 2>&1; then
     echo -e "${RED}ERROR: WireGuard interface 'gateway' not found${NC}"
     echo "Run './scripts/wg.sh' first to set up WireGuard"
     exit 1
 fi
 
 echo -e "${YELLOW}WireGuard interface status:${NC}"
-wg show gateway
+sudo wg show gateway
 echo ""
 
 # Get VM IPs from Terraform outputs
