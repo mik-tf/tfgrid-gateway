@@ -57,7 +57,7 @@ variable "network" {
 provider "grid" {
   mnemonic  = var.mnemonic
   network   = var.network
-  relay_url = "wss://relay.grid.tf"
+  relay_url = var.network == "main" ? "wss://relay.grid.tf" : "wss://relay.test.grid.tf"
 }
 
 # Generate unique mycelium keys/seeds for all nodes
