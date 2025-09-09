@@ -64,15 +64,19 @@
             dest: /usr/local/bin/mycelium
             mode: '0755'
           become: true
+          ignore_errors: true
+          register: mycelium_download
 
-        - name: Create mycelium user
+        - name: Create mycelium user (only if download succeeded)
           user:
             name: mycelium
             system: yes
             shell: /usr/sbin/nologin
           become: true
+          when: mycelium_download is not failed
 
   become: true
+  ignore_errors: true
 
 - name: Create required directories
   file:

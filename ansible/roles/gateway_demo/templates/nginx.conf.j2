@@ -1,0 +1,41 @@
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    root /var/www/gateway-demo;
+    index index.html;
+
+    server_name _;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    # API endpoint for gateway info
+    location /api/status {
+        default_type application/json;
+        return 200 '{
+            "gateway_type": "{{ gateway_type | default("gateway_nat") }}",
+            "network": "{{ network | default("test") }}",
+            "hostname": "{{ ansible_hostname }}",
+            "public_ip": "{{ ansible_default_ipv4.address }}",
+            "wireguard_ip": "{{ wireguard_ip | default("N/A") }}",
+            "mycelium_ip": "{{ mycelium_ip | default("N/A") }}",
+            "timestamp": "{{ ansible_date_time.iso8601 }}",
+            "features": {
+                "nat": true,
+                "firewall": true,
+                "ip_forwarding": true,
+                "wireguard": {{ wg_config is defined | to_json }},
+                "mycelium": {{ mycelium_ip is defined | to_json }}
+            }
+        }';
+    }
+
+    # Health check endpoint
+    location /health {
+        access_log off;
+        return 200 "OK\n";
+        add_header Content-Type text/plain;
+    }
+}

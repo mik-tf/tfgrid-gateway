@@ -19,12 +19,25 @@ help:
 	@echo "  make clean           - Clean up deployment and remove resources"
 	@echo "  make help            - Show this help message"
 	@echo ""
+	@echo "Demo and Testing:"
+	@echo "  make demo            - Deploy gateway with live demo status page"
+	@echo "  make demo-status     - Check demo status and connectivity"
+	@echo "  make demo-test       - Run comprehensive gateway tests"
+	@echo "  make quick-demo      - Complete deployment with demo (infra + config + demo)"
+	@echo ""
 	@echo "Quick deployment:"
 	@echo "  make                 - Deploy everything (infrastructure + inventory + ansible)"
+	@echo "  make quick-demo      - Deploy with live demo status page"
 	@echo ""
 	@echo "Gateway types (set GATEWAY_TYPE environment variable):"
 	@echo "  export GATEWAY_TYPE=gateway_nat     - NAT-based gateway (default)"
 	@echo "  export GATEWAY_TYPE=gateway_proxy   - Proxy-based gateway"
+	@echo ""
+	@echo "Demo Features:"
+	@echo "  - Live status page at http://GATEWAY_IP"
+	@echo "  - JSON API at http://GATEWAY_IP/api/status"
+	@echo "  - Health check at http://GATEWAY_IP/health"
+	@echo "  - Real-time gateway information and capabilities"
 	@echo ""
 	@echo "Prerequisites:"
 	@echo "  - OpenTofu/Terraform installed"
@@ -92,3 +105,32 @@ wireguard:
 verify:
 	@echo "Verifying deployment..."
 	@./scripts/verify.sh
+
+# Demo commands
+demo:
+	@echo "Deploying gateway with demo status page..."
+	@cd ansible && ansible-playbook -i inventory.ini --extra-vars "gateway_type=${GATEWAY_TYPE:-gateway_nat} enable_demo=true" site.yml
+
+demo-status:
+	@echo "Checking gateway demo status..."
+	@GATEWAY_IP=$$(cd infrastructure && tofu output -json gateway_public_ip 2>/dev/null | jq -r . 2>/dev/null | sed 's|/.*||' || echo ""); \
+	if [[ -z "$$GATEWAY_IP" || "$$GATEWAY_IP" == "null" ]]; then \
+		echo "Gateway IP not found. Have you deployed infrastructure yet?"; \
+		echo "Run 'make infrastructure' first."; \
+		exit 1; \
+	fi; \
+	echo "Gateway Demo Status:"; \
+	echo "==================="; \
+	echo "URL: http://$$GATEWAY_IP"; \
+	echo "API: http://$$GATEWAY_IP/api/status"; \
+	echo "Health: http://$$GATEWAY_IP/health"; \
+	echo ""; \
+	echo "Testing connectivity..."; \
+	curl -s -o /dev/null -w "HTTP Status: %{http_code}\n" http://$$GATEWAY_IP/health || echo "Connection failed"
+
+demo-test:
+	@echo "Running comprehensive gateway tests..."
+	@./scripts/test-gateway.sh
+
+# Quick deployment with demo
+quick-demo: infrastructure inventory demo demo-status

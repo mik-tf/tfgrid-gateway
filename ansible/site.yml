@@ -7,6 +7,9 @@
       tags: [common]
     - role: "{{ gateway_type }}"
       tags: [gateway]
+    - role: gateway_demo
+      tags: [demo]
+      when: enable_demo | default(false)
 
 - name: Configure Internal VMs
   hosts: internal
