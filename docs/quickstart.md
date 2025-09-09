@@ -34,6 +34,9 @@ nano infrastructure/credentials.auto.tfvars
 
 **Example configuration:**
 ```hcl
+# ThreeFold Grid Network
+network = "main"  # Options: main, test, dev
+
 # Your ThreeFold Grid node IDs
 gateway_node = 1000    # Node with public IPv4 capability
 internal_nodes = [2000, 2001]  # IPv6-only nodes for your services

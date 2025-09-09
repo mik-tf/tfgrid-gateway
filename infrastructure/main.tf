@@ -1,7 +1,8 @@
 terraform {
   required_providers {
     grid = {
-      source = "threefoldtech/grid"
+      source  = "threefoldtech/grid"
+      version = "~> 0.2.0"
     }
   }
 }
@@ -48,9 +49,15 @@ variable "internal_disk" {
   default = 25 # 25GB storage
 }
 
+variable "network" {
+  type        = string
+  default     = "main"
+  description = "ThreeFold Grid network (main, test, dev)"
+}
+
 provider "grid" {
   mnemonic  = var.mnemonic
-  network   = "main"
+  network   = var.network
   relay_url = "wss://relay.grid.tf"
 }
 
@@ -90,7 +97,7 @@ resource "grid_deployment" "gateway" {
   network_name = grid_network.gateway_network.name
 
   vms {
-    name             = "gateway-vm"
+    name             = "gateway_vm"
     flist            = "https://hub.grid.tf/tf-official-vms/ubuntu-24.04-full.flist"
     cpu              = var.gateway_cpu
     memory           = var.gateway_mem
@@ -117,7 +124,7 @@ resource "grid_deployment" "internal_vms" {
   network_name = grid_network.gateway_network.name
 
   vms {
-    name             = "internal-vm-${each.key}"
+    name             = "internal_vm_${each.key}"
     flist            = "https://hub.grid.tf/tf-official-vms/ubuntu-24.04-full.flist"
     cpu              = var.internal_cpu
     memory           = var.internal_mem

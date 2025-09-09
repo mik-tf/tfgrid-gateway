@@ -11,6 +11,7 @@ override.tf.json
 *_override.tf
 *_override.tf.json
 state.json
+tfplan
 
 # Wireguard config
 *.conf
