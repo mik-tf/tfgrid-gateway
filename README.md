@@ -45,43 +45,28 @@ ansible-galaxy collection install -r requirements.yml
 ansible-galaxy role install -r requirements.yml
 ```
 
-## Quick Start
+## 🚀 Quick Start (5 minutes)
 
-1. Clone this repository:
-   ```
-   git clone https://github.com/mik-tf/tfgrid-gateway
-   cd tfgrid-gateway
-   ```
+**New to tfgrid-gateway?** Follow our [Quick Start Guide](docs/quickstart.md) for a complete step-by-step walkthrough!
 
-2. Configure your deployment:
-   ```bash
-   # Set up Terraform/OpenTofu configuration for non-sensitive settings
-   cp infrastructure/credentials.auto.tfvars.example infrastructure/credentials.auto.tfvars
-   nano infrastructure/credentials.auto.tfvars
+### One-Command Deployment
+```bash
+git clone https://github.com/mik-tf/tfgrid-gateway
+cd tfgrid-gateway
+cp infrastructure/credentials.auto.tfvars.example infrastructure/credentials.auto.tfvars
+nano infrastructure/credentials.auto.tfvars  # Configure your node IDs
+export TF_VAR_mnemonic="your_mnemonic_here"
+make  # Deploy everything automatically!
+```
 
-   # MAXIMUM SECURITY: Set up your ThreeFold mnemonic securely (prevents shell history recording)
-   set +o history
-   export TF_VAR_mnemonic="your_actual_mnemonic_phrase"
-   set -o history
-   ```
+### Access Your Gateway
+After deployment, you'll get a public IPv4 address. Access your services at:
+- `http://YOUR_IP:8081` → Internal VM 1
+- `http://YOUR_IP:8082` → Internal VM 2
+- `http://YOUR_IP/web1` → VM 1 (proxy mode)
+- `http://YOUR_IP/web2` → VM 2 (proxy mode)
 
-   See `docs/security.md` for more details on secure credential handling.
-
-   > **SSH Key Auto-Detection**: The system will automatically use your SSH keys for deployment without requiring manual configuration. It first checks for `~/.ssh/id_ed25519.pub`, then falls back to `~/.ssh/id_rsa.pub` if needed. You can also manually specify your SSH key in the `credentials.auto.tfvars` file if desired.
-
-3. Deploy the gateway:
-   ```bash
-   # Deploy everything in one go (infrastructure + inventory + ansible)
-   make
-
-   # Or deploy step by step:
-   make infrastructure   # Deploy ThreeFold Grid VMs
-   make inventory        # Generate Ansible inventory
-   make ansible          # Configure with Ansible
-   make ansible-test     # Test the configuration
-   ```
-
-   > **Tip**: Run `make help` to see all available make commands
+📖 **Detailed Guide**: [docs/quickstart.md](docs/quickstart.md)
 
 ### Gateway Types
 
