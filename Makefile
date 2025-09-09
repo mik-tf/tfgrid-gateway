@@ -1,7 +1,7 @@
-.PHONY: help infrastructure configure connect ping clean
+.PHONY: help infrastructure configure connect ping clean ansible ansible-test inventory
 
 # Default target
-all: infrastructure configure
+all: infrastructure inventory ansible
 
 # Help target
 help:
@@ -10,17 +10,25 @@ help:
 	@echo ""
 	@echo "Available targets:"
 	@echo "  make infrastructure  - Deploy VMs and network infrastructure"
-	@echo "  make configure       - Configure gateway services (run on gateway VM)"
+	@echo "  make inventory       - Generate Ansible inventory from Terraform outputs"
+	@echo "  make ansible         - Configure gateway using Ansible"
+	@echo "  make ansible-test    - Run gateway tests using Ansible"
+	@echo "  make configure       - Configure gateway services (legacy script method)"
 	@echo "  make connect         - Connect to gateway VM via SSH"
 	@echo "  make ping            - Test connectivity to all VMs"
 	@echo "  make clean           - Clean up deployment and remove resources"
 	@echo "  make help            - Show this help message"
 	@echo ""
 	@echo "Quick deployment:"
-	@echo "  make                 - Deploy everything (infrastructure + configuration)"
+	@echo "  make                 - Deploy everything (infrastructure + inventory + ansible)"
+	@echo ""
+	@echo "Gateway types (set GATEWAY_TYPE environment variable):"
+	@echo "  export GATEWAY_TYPE=gateway_nat     - NAT-based gateway (default)"
+	@echo "  export GATEWAY_TYPE=gateway_proxy   - Proxy-based gateway"
 	@echo ""
 	@echo "Prerequisites:"
 	@echo "  - OpenTofu/Terraform installed"
+	@echo "  - Ansible installed"
 	@echo "  - ThreeFold account with TFT balance"
 	@echo "  - Configure infrastructure/credentials.auto.tfvars"
 	@echo "  - Set TF_VAR_mnemonic environment variable"
@@ -59,6 +67,21 @@ clean:
 	@echo "Cleaning up deployment..."
 	@cd infrastructure && tofu destroy -auto-approve 2>/dev/null || true
 	@echo "Cleanup completed"
+
+# Generate Ansible inventory
+inventory:
+	@echo "Generating Ansible inventory..."
+	@./scripts/generate_inventory.sh
+
+# Configure with Ansible
+ansible:
+	@echo "Configuring gateway with Ansible..."
+	@cd ansible && ansible-playbook -i inventory.ini site.yml
+
+# Test with Ansible
+ansible-test:
+	@echo "Testing gateway configuration with Ansible..."
+	@cd ansible && ansible-playbook -i inventory.ini test-gateway.yml
 
 # WireGuard setup
 wireguard:

@@ -31,10 +31,19 @@ The gateway VMs live within the same network as your internal VMs, providing sec
 
 - Linux/macOS system with bash
 - [OpenTofu](https://opentofu.org/) (or Terraform) installed
-- [Ansible](https://www.ansible.com/) installed (for advanced configurations)
+- [Ansible](https://www.ansible.com/) installed
 - [WireGuard](https://www.wireguard.com/) installed
 - [jq](https://stedolan.github.io/jq/) installed
 - ThreeFold account with sufficient TFT balance
+
+### Installing Ansible Dependencies
+
+```bash
+# Install Ansible collections and roles
+cd ansible
+ansible-galaxy collection install -r requirements.yml
+ansible-galaxy role install -r requirements.yml
+```
 
 ## Quick Start
 
@@ -62,15 +71,35 @@ The gateway VMs live within the same network as your internal VMs, providing sec
 
 3. Deploy the gateway:
    ```bash
-   # Deploy everything in one go (infrastructure and configuration)
+   # Deploy everything in one go (infrastructure + inventory + ansible)
    make
 
    # Or deploy step by step:
    make infrastructure   # Deploy ThreeFold Grid VMs
-   make configure        # Configure gateway services
+   make inventory        # Generate Ansible inventory
+   make ansible          # Configure with Ansible
+   make ansible-test     # Test the configuration
    ```
 
    > **Tip**: Run `make help` to see all available make commands
+
+### Gateway Types
+
+Choose your gateway configuration by setting the `GATEWAY_TYPE` environment variable:
+
+```bash
+# NAT-based gateway (default)
+export GATEWAY_TYPE=gateway_nat
+make ansible
+
+# Proxy-based gateway with HAProxy and Nginx
+export GATEWAY_TYPE=gateway_proxy
+make ansible
+```
+
+**Available Gateway Types:**
+- `gateway_nat`: Traditional NAT gateway using nftables for port forwarding and masquerading
+- `gateway_proxy`: Reverse proxy gateway using HAProxy and Nginx for load balancing and SSL termination
 
 4. After deployment, for security, unset the sensitive environment variable:
    ```bash

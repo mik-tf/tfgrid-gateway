@@ -1,0 +1,190 @@
+---
+- name: Configure NAT-based gateway with nftables
+  block:
+    - name: Create NAT table
+      nftables:
+        table: inet gateway_nat
+        state: present
+      become: true
+
+    - name: Add prerouting chain
+      nftables:
+        table: inet gateway_nat
+        chain: prerouting
+        hook: prerouting
+        type: nat
+        priority: -100
+        policy: accept
+        state: present
+      become: true
+
+    - name: Add postrouting chain
+      nftables:
+        table: inet gateway_nat
+        chain: postrouting
+        hook: postrouting
+        type: nat
+        priority: 100
+        policy: accept
+        state: present
+      become: true
+
+    - name: Enable masquerading for internal network
+      nftables:
+        table: inet gateway_nat
+        chain: postrouting
+        rule: "ip saddr 10.1.0.0/16 oifname eth0 masquerade"
+        state: present
+      become: true
+
+    - name: Add port forwarding rules (if configured)
+      nftables:
+        table: inet gateway_nat
+        chain: prerouting
+        rule: "iifname eth0 tcp dport {{ item.port }} dnat ip to {{ item.target_ip }}:{{ item.target_port | default(item.port) }}"
+        state: present
+      with_items: "{{ port_forwards | default([]) }}"
+      become: true
+
+  become: true
+
+- name: Configure firewall rules
+  block:
+    - name: Create firewall table
+      nftables:
+        table: inet firewall
+        state: present
+      become: true
+
+    - name: Add input chain
+      nftables:
+        table: inet firewall
+        chain: input
+        hook: input
+        type: filter
+        priority: 0
+        policy: drop
+        state: present
+      become: true
+
+    - name: Add forward chain
+      nftables:
+        table: inet firewall
+        chain: forward
+        hook: forward
+        type: filter
+        priority: 0
+        policy: drop
+        state: present
+      become: true
+
+    - name: Allow established connections
+      nftables:
+        table: inet firewall
+        chain: input
+        rule: "ct state established,related accept"
+        state: present
+      become: true
+
+    - name: Allow loopback
+      nftables:
+        table: inet firewall
+        chain: input
+        rule: "iifname lo accept"
+        state: present
+      become: true
+
+    - name: Allow SSH
+      nftables:
+        table: inet firewall
+        chain: input
+        rule: "tcp dport 22 accept"
+        state: present
+      become: true
+
+    - name: Allow HTTP/HTTPS
+      nftables:
+        table: inet firewall
+        chain: input
+        rule: "tcp dport { 80, 443 } accept"
+        state: present
+      become: true
+
+    - name: Allow WireGuard
+      nftables:
+        table: inet firewall
+        chain: input
+        rule: "udp dport 51820 accept"
+        state: present
+      become: true
+
+    - name: Allow forwarding between interfaces
+      nftables:
+        table: inet firewall
+        chain: forward
+        rule: "iifname gateway oifname eth0 accept"
+        state: present
+      become: true
+
+    - name: Allow return traffic
+      nftables:
+        table: inet firewall
+        chain: forward
+        rule: "iifname eth0 oifname gateway ct state established,related accept"
+        state: present
+      become: true
+
+    - name: Log dropped packets
+      nftables:
+        table: inet firewall
+        chain: input
+        rule: "log prefix \"Dropped input: \" drop"
+        state: present
+      become: true
+
+    - name: Log dropped forward packets
+      nftables:
+        table: inet firewall
+        chain: forward
+        rule: "log prefix \"Dropped forward: \" drop"
+        state: present
+      become: true
+
+  become: true
+
+- name: Make nftables rules persistent
+  command: nft list ruleset > /etc/nftables.conf
+  become: true
+
+- name: Enable nftables service
+  systemd:
+    name: nftables
+    enabled: yes
+    state: started
+  become: true
+
+- name: Configure NAT logging
+  copy:
+    dest: /etc/rsyslog.d/10-gateway.conf
+    content: |
+      :msg, contains, "Dropped" /var/log/gateway/dropped.log
+      & stop
+    mode: '0644'
+  become: true
+  notify: restart rsyslog
+
+- name: Create log rotation for gateway logs
+  copy:
+    dest: /etc/logrotate.d/gateway
+    content: |
+      /var/log/gateway/*.log {
+          daily
+          missingok
+          rotate 7
+          compress
+          delaycompress
+          notifempty
+          create 644 root root
+      }
+    mode: '0644'
+  become: true
