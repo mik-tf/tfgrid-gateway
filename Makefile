@@ -16,6 +16,7 @@ help:
 	@echo "  make configure       - Configure gateway services (legacy script method)"
 	@echo "  make connect         - Connect to gateway VM via SSH"
 	@echo "  make ping            - Test connectivity to all VMs"
+	@echo "  make address         - Show all VM addresses (WireGuard + Mycelium)"
 	@echo "  make clean           - Clean up deployment and remove resources"
 	@echo "  make help            - Show this help message"
 	@echo ""
@@ -102,6 +103,39 @@ ansible-test:
 wireguard:
 	@echo "Setting up WireGuard..."
 	@./scripts/wg.sh
+
+# Show all VM addresses
+address:
+	@echo "ThreeFold Grid Gateway VM Addresses"
+	@echo "===================================="
+	@echo ""
+	@cd infrastructure && \
+	GATEWAY_PUBLIC_IP=$$(tofu output -json gateway_public_ip 2>/dev/null | jq -r . 2>/dev/null | sed 's|/.*||' || echo "N/A") && \
+	GATEWAY_WG_IP=$$(tofu output -json gateway_wireguard_ip 2>/dev/null | jq -r . 2>/dev/null | sed 's|/.*||' || echo "N/A") && \
+	GATEWAY_MYCELIUM_IP=$$(tofu output -json gateway_mycelium_ip 2>/dev/null | jq -r . 2>/dev/null || echo "N/A") && \
+	INTERNAL_WG_IPS=$$(tofu output -json internal_wireguard_ips 2>/dev/null || echo "{}") && \
+	INTERNAL_MYCELIUM_IPS=$$(tofu output -json internal_mycelium_ips 2>/dev/null || echo "{}") && \
+	echo "🌐 Public Access:" && \
+	echo "  Gateway: http://$$GATEWAY_PUBLIC_IP" && \
+	echo "  VM 7:   http://$$GATEWAY_PUBLIC_IP:8081" && \
+	echo "  VM 8:   http://$$GATEWAY_PUBLIC_IP:8082" && \
+	echo "" && \
+	echo "🔐 Private Networks (via WireGuard):" && \
+	echo "  Gateway: $$GATEWAY_WG_IP" && \
+	echo "$$INTERNAL_WG_IPS" | jq -r 'to_entries[] | "  VM \(.key): \(.value)"' 2>/dev/null && \
+	echo "" && \
+	echo "🌍 Mycelium IPv6 Overlay:" && \
+	if [ "$$GATEWAY_MYCELIUM_IP" != "N/A" ] && [ "$$GATEWAY_MYCELIUM_IP" != "null" ]; then \
+		echo "  Gateway: $$GATEWAY_MYCELIUM_IP"; \
+	else \
+		echo "  Gateway: Not assigned yet"; \
+	fi && \
+	echo "$$INTERNAL_MYCELIUM_IPS" | jq -r 'to_entries[] | "  VM \(.key): \(.value)"' 2>/dev/null && \
+	echo "" && \
+	echo "💡 Usage Tips:" && \
+	echo "  • Use 'make wireguard' to connect to private networks" && \
+	echo "  • Public websites work without WireGuard" && \
+	echo "  • SSH to private IPs requires WireGuard tunnel"
 
 # Verify deployment
 verify:

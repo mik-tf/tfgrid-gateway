@@ -74,8 +74,8 @@ fi
 # Check Mycelium if available
 echo -e "${YELLOW}Checking Mycelium status...${NC}"
 if command -v mycelium >/dev/null 2>&1; then
-    if mycelium inspect --json >/dev/null 2>&1; then
-        MYCELIUM_IP=$(mycelium inspect --json | jq -r .address 2>/dev/null || echo "")
+    if sudo mycelium inspect --json >/dev/null 2>&1; then
+        MYCELIUM_IP=$(sudo mycelium inspect --json | jq -r .address 2>/dev/null || echo "")
         if [[ -n "$MYCELIUM_IP" && "$MYCELIUM_IP" != "null" ]]; then
             echo -e "${GREEN}✓ Mycelium active, IP: $MYCELIUM_IP${NC}"
         else

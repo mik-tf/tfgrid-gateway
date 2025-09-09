@@ -71,5 +71,23 @@ else
     echo -e "${RED}✗ SSH Failed${NC}"
 fi
 
+# Test Mycelium connectivity if available
+echo ""
+echo -e "${YELLOW}Testing Mycelium connectivity...${NC}"
+if command -v mycelium >/dev/null 2>&1; then
+    if sudo mycelium inspect --json >/dev/null 2>&1; then
+        MYCELIUM_IP=$(sudo mycelium inspect --json | jq -r .address 2>/dev/null || echo "")
+        if [[ -n "$MYCELIUM_IP" && "$MYCELIUM_IP" != "null" ]]; then
+            echo -e "${GREEN}✓ Mycelium active: $MYCELIUM_IP${NC}"
+        else
+            echo -e "${YELLOW}⚠ Mycelium running but no IP assigned${NC}"
+        fi
+    else
+        echo -e "${RED}✗ Mycelium command failed${NC}"
+    fi
+else
+    echo -e "${YELLOW}⚠ Mycelium not available locally${NC}"
+fi
+
 echo ""
 echo -e "${GREEN}Connectivity test completed${NC}"
