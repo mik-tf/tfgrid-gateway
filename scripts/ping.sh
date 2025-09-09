@@ -30,7 +30,9 @@ echo ""
 cd "$INFRASTRUCTURE_DIR"
 
 GATEWAY_WG_IP=$(tofu output -json gateway_wireguard_ip 2>/dev/null | jq -r . 2>/dev/null || echo "")
+GATEWAY_MYCELIUM_IP=$(tofu output -json gateway_mycelium_ip 2>/dev/null | jq -r . 2>/dev/null || echo "")
 INTERNAL_WG_IPS=$(tofu output -json internal_wireguard_ips 2>/dev/null || echo "{}")
+INTERNAL_MYCELIUM_IPS=$(tofu output -json internal_mycelium_ips 2>/dev/null || echo "{}")
 
 if [[ -z "$GATEWAY_WG_IP" || "$GATEWAY_WG_IP" == "null" ]]; then
     echo -e "${RED}ERROR: Could not get gateway IP from Terraform outputs${NC}"
@@ -59,6 +61,34 @@ echo "$INTERNAL_WG_IPS" | jq -r 'to_entries[] | "\(.key) \(.value)"' 2>/dev/null
         fi
     fi
 done
+
+# Test Mycelium IPv6 connectivity if available
+echo ""
+echo -e "${YELLOW}Testing Mycelium IPv6 connectivity...${NC}"
+
+# Get Mycelium IPs
+INTERNAL_MYCELIUM_IPS=$(tofu output -json internal_mycelium_ips 2>/dev/null || echo "{}")
+
+echo "$INTERNAL_MYCELIUM_IPS" | jq -r 'to_entries[] | "\(.key) \(.value)"' 2>/dev/null | while read -r name ip; do
+    if [[ -n "$ip" && "$ip" != "null" ]]; then
+        echo -n "VM $name Mycelium ($ip): "
+        if ping6 -c 3 -W 2 "$ip" >/dev/null 2>&1; then
+            echo -e "${GREEN}✓ IPv6 Reachable${NC}"
+        else
+            echo -e "${RED}✗ IPv6 Unreachable${NC}"
+        fi
+    fi
+done
+
+# Test gateway Mycelium if available
+if [[ -n "$GATEWAY_MYCELIUM_IP" && "$GATEWAY_MYCELIUM_IP" != "null" && "$GATEWAY_MYCELIUM_IP" != "N/A" ]]; then
+    echo -n "Gateway Mycelium ($GATEWAY_MYCELIUM_IP): "
+    if ping6 -c 3 -W 2 "$GATEWAY_MYCELIUM_IP" >/dev/null 2>&1; then
+        echo -e "${GREEN}✓ IPv6 Reachable${NC}"
+    else
+        echo -e "${RED}✗ IPv6 Unreachable${NC}"
+    fi
+fi
 
 echo ""
 echo -e "${YELLOW}Testing SSH connectivity...${NC}"
