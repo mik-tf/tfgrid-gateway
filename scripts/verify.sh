@@ -48,7 +48,7 @@ if [[ ! -f "/etc/wireguard/gateway.conf" ]]; then
 else
     echo -e "${GREEN}✓ WireGuard config exists${NC}"
 
-    if ! wg show gateway >/dev/null 2>&1; then
+    if ! sudo wg show gateway >/dev/null 2>&1; then
         echo -e "${RED}✗ WireGuard interface 'gateway' not active${NC}"
         ((ERRORS++))
     else
@@ -57,7 +57,7 @@ else
 fi
 
 # Check gateway connectivity if WireGuard is active
-if wg show gateway >/dev/null 2>&1; then
+if sudo wg show gateway >/dev/null 2>&1; then
     echo -e "${YELLOW}Testing gateway connectivity...${NC}"
 
     GATEWAY_WG_IP=$(tofu output -json gateway_wireguard_ip 2>/dev/null | jq -r . 2>/dev/null || echo "")
