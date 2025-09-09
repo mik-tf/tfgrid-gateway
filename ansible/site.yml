@@ -17,6 +17,9 @@
   roles:
     - role: gateway_common
       tags: [common]
+    - role: vm_demo
+      tags: [vm-demo]
+      when: enable_vm_demo | default(false)
 
 - name: Setup Testing Infrastructure
   hosts: all

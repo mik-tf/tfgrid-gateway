@@ -21,6 +21,8 @@ help:
 	@echo ""
 	@echo "Demo and Testing:"
 	@echo "  make demo            - Deploy gateway with live demo status page"
+	@echo "  make vm-demo         - Deploy individual VM demo websites"
+	@echo "  make full-demo       - Complete deployment with gateway + VM demos + port forwarding"
 	@echo "  make demo-status     - Check demo status and connectivity"
 	@echo "  make demo-test       - Run comprehensive gateway tests"
 	@echo "  make quick-demo      - Complete deployment with demo (infra + config + demo)"
@@ -131,6 +133,17 @@ demo-status:
 demo-test:
 	@echo "Running comprehensive gateway tests..."
 	@./scripts/test-gateway.sh
+
+# Advanced demo commands
+vm-demo:
+	@echo "Deploying VM-specific demo websites..."
+	@cd ansible && ansible-playbook -i inventory.ini --extra-vars "gateway_type=${GATEWAY_TYPE:-gateway_nat} enable_vm_demo=true" site.yml
+
+full-demo: infrastructure inventory demo vm-demo demo-status
+	@echo "Full demo deployment completed!"
+	@echo "Gateway Status: http://$$(cd infrastructure && tofu output -json gateway_public_ip 2>/dev/null | jq -r . 2>/dev/null | sed 's|/.*||')"
+	@echo "VM 1 (port 8081): http://$$(cd infrastructure && tofu output -json gateway_public_ip 2>/dev/null | jq -r . 2>/dev/null | sed 's|/.*||'):8081"
+	@echo "VM 2 (port 8082): http://$$(cd infrastructure && tofu output -json gateway_public_ip 2>/dev/null | jq -r . 2>/dev/null | sed 's|/.*||'):8082"
 
 # Quick deployment with demo
 quick-demo: infrastructure inventory demo demo-status

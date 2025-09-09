@@ -161,6 +161,68 @@
             background: rgba(255,255,255,0.3);
         }
 
+        .vm-links {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .vm-link-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+        }
+
+        .vm-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .vm-info strong {
+            font-size: 1.1rem;
+            color: #2c3e50;
+        }
+
+        .vm-port {
+            font-size: 0.85rem;
+            color: #666;
+            background: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+
+        .vm-link-button {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+        }
+
+        .vm-link-button:hover {
+            background: linear-gradient(135deg, #218838, #1aa085);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+        }
+
+        .vm-note {
+            margin-top: 15px;
+            padding: 10px;
+            background: #e8f5e8;
+            border-radius: 6px;
+            border-left: 4px solid #28a745;
+        }
+
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 2rem;
@@ -168,6 +230,17 @@
 
             .status-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .vm-link-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .vm-link-button {
+                align-self: stretch;
+                text-align: center;
             }
         }
     </style>
@@ -240,6 +313,38 @@
                         <span>Mycelium Network</span>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <div class="status-card">
+            <h3>🖥️ Internal VMs</h3>
+            <p style="margin-bottom: 15px; color: #666; font-size: 0.9rem;">
+                Access individual VM websites through port forwarding:
+            </p>
+            <div class="vm-links">
+                <div class="vm-link-item">
+                    <div class="vm-info">
+                        <strong>VM 7</strong>
+                        <span class="vm-port">Port 8081</span>
+                    </div>
+                    <a href="http://{{ ansible_default_ipv4.address }}:8081" class="vm-link-button" target="_blank">
+                        🌐 Visit VM 7
+                    </a>
+                </div>
+                <div class="vm-link-item">
+                    <div class="vm-info">
+                        <strong>VM 8</strong>
+                        <span class="vm-port">Port 8082</span>
+                    </div>
+                    <a href="http://{{ ansible_default_ipv4.address }}:8082" class="vm-link-button" target="_blank">
+                        🌐 Visit VM 8
+                    </a>
+                </div>
+            </div>
+            <div class="vm-note">
+                <small style="color: #666;">
+                    💡 Each VM website shows its unique network configuration, WireGuard IP, Mycelium IP, and system information.
+                </small>
             </div>
         </div>
 

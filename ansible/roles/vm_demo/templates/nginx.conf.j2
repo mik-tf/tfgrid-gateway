@@ -1,0 +1,39 @@
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    root /var/www/vm-demo;
+    index index.html;
+
+    server_name _;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    # VM info API endpoint
+    location /api/vm-info {
+        default_type application/json;
+        return 200 '{
+            "vm_id": "{{ vm_id | default(inventory_hostname) }}",
+            "wireguard_ip": "{{ wireguard_ip | default("N/A") }}",
+            "mycelium_ip": "{{ mycelium_ip | default("N/A") }}",
+            "hostname": "{{ ansible_hostname }}",
+            "gateway_type": "{{ gateway_type | default("gateway_nat") }}",
+            "network": "{{ network | default("test") }}",
+            "timestamp": "{{ ansible_date_time.iso8601 }}",
+            "system": {
+                "architecture": "{{ ansible_architecture | default("N/A") }}",
+                "distribution": "{{ ansible_distribution | default("N/A") }}",
+                "kernel": "{{ ansible_kernel | default("N/A") }}"
+            }
+        }';
+    }
+
+    # Health check endpoint
+    location /health {
+        access_log off;
+        return 200 "VM {{ vm_id | default(inventory_hostname) }} OK\n";
+        add_header Content-Type text/plain;
+    }
+}

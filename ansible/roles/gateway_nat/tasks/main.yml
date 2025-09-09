@@ -37,7 +37,16 @@
         state: present
       become: true
 
-    - name: Add port forwarding rules (if configured)
+    - name: Add port forwarding rules for internal VMs
+      nftables:
+        table: inet gateway_nat
+        chain: prerouting
+        rule: "iifname eth0 tcp dport {{ 8080 + (vm_index | int) }} dnat ip to {{ wireguard_ip }}:80"
+        state: present
+      when: wireguard_ip is defined and vm_index is defined
+      become: true
+
+    - name: Add custom port forwarding rules (if configured)
       nftables:
         table: inet gateway_nat
         chain: prerouting

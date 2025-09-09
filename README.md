@@ -94,6 +94,150 @@ make ansible
 - `gateway_nat`: Traditional NAT gateway using nftables for port forwarding and masquerading
 - `gateway_proxy`: Reverse proxy gateway using HAProxy and Nginx for load balancing and SSL termination
 
+## 🎯 Live Demo System
+
+The tfgrid-gateway project includes a comprehensive live demo system that makes it easy to see and test gateway functionality in real-time.
+
+### Quick Demo Deployment
+
+Deploy a fully functional gateway with live status page in one command:
+
+```bash
+# Complete demo deployment (infrastructure + configuration + demo)
+make quick-demo
+
+# Or step-by-step
+make infrastructure  # Deploy VMs and network
+make inventory      # Generate Ansible inventory
+make demo          # Deploy demo with status page
+make demo-status   # Check demo URLs and connectivity
+```
+
+### Demo Features
+
+After deployment, you'll have:
+
+- **🌐 Live Status Page**: `http://YOUR_GATEWAY_IP`
+  - Real-time gateway configuration
+  - Network information and security features
+  - System metrics and status
+  - Beautiful, responsive web interface
+
+- **📡 JSON API**: `http://YOUR_GATEWAY_IP/api/status`
+  - Programmatic access to gateway information
+  - Machine-readable status data
+
+- **💓 Health Check**: `http://YOUR_GATEWAY_IP/health`
+  - Simple monitoring endpoint
+  - Returns "OK" when gateway is healthy
+
+## 🚀 Advanced Multi-VM Demo System
+
+The advanced demo system creates individual websites on each internal VM and configures port forwarding from the gateway, allowing you to access each VM's unique content through different ports.
+
+### Multi-VM Demo Features
+
+- **🖥️ Individual VM Websites**: Each internal VM gets its own nginx website
+- **🔀 Port Forwarding**: Gateway forwards different ports to different VMs
+- **📊 Dynamic Content**: Each VM shows its specific network information
+- **🌐 Unified Access**: Access all VMs through the gateway's public IP
+
+### Example Multi-VM Setup
+
+```
+Gateway VM (185.206.122.150)
+├── Port 80: Gateway status page
+├── Port 8081: VM 1 website (shows VM 1's WireGuard IP, Mycelium IP, etc.)
+└── Port 8082: VM 2 website (shows VM 2's WireGuard IP, Mycelium IP, etc.)
+```
+
+### Deploying the Advanced Demo
+
+```bash
+# Complete multi-VM demo deployment
+make full-demo
+
+# This runs:
+# 1. Infrastructure deployment (gateway + internal VMs)
+# 2. Gateway demo (status page on port 80)
+# 3. VM demos (individual websites on internal VMs)
+# 4. Port forwarding configuration (ports 8081, 8082, etc.)
+```
+
+### Accessing Individual VM Websites
+
+After deployment, access each VM's website:
+
+```bash
+# VM 1 website (port 8081)
+curl http://YOUR_GATEWAY_IP:8081
+
+# VM 2 website (port 8082)
+curl http://YOUR_GATEWAY_IP:8082
+
+# Each VM shows:
+# - Its unique VM ID
+# - WireGuard IP address
+# - Mycelium IP address
+# - Gateway connection status
+# - System information
+```
+
+### Advanced Demo Commands
+
+```bash
+# Deploy only VM-specific websites
+make vm-demo
+
+# Deploy complete system with port forwarding
+make full-demo
+
+# Check all demo URLs and ports
+make demo-status
+
+# Run comprehensive tests
+make demo-test
+```
+
+### What Each VM Website Shows
+
+Each internal VM's website displays:
+
+- **🆔 VM Identity**: Unique VM identifier and hostname
+- **🌐 Network Configuration**:
+  - WireGuard IP within the private network
+  - Mycelium IPv6 address
+  - Gateway connection status
+- **⚙️ System Information**: CPU, memory, architecture
+- **🔗 Gateway Details**: Gateway type, network, connection status
+- **📡 API Endpoints**: JSON API for programmatic access
+
+### Perfect For
+
+- **Advanced Learning**: Understand multi-VM networking and port forwarding
+- **Real-world Simulation**: Mimic production deployments with multiple services
+- **Development Testing**: Test applications across multiple VMs
+- **Demonstration**: Show complete ThreeFold Grid gateway capabilities
+- **DNS Integration**: Set up `gateway.example.com` pointing to your gateway IP
+
+### What the Demo Shows
+
+The live demo displays:
+- **Gateway Type**: NAT, Proxy, or custom configuration
+- **Network**: ThreeFold Grid network (main/test/dev)
+- **IP Addresses**: Public IPv4, WireGuard IPs, Mycelium IPs
+- **Security Features**: Firewall status, VPN connectivity
+- **System Information**: Uptime, load, memory, architecture
+- **Real-time Status**: Live updates of all gateway capabilities
+
+### Perfect For
+
+- **Learning**: See exactly how ThreeFold Grid gateways work
+- **Demonstration**: Show gateway capabilities to others
+- **Development**: Use as a foundation for custom projects
+- **Testing**: Verify gateway functionality and connectivity
+- **Troubleshooting**: Real-time diagnostics and monitoring
+
 4. After deployment, for security, unset the sensitive environment variable:
    ```bash
    unset TF_VAR_mnemonic
