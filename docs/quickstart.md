@@ -49,11 +49,28 @@ internal_mem = 2048
 ```
 
 ### Step 3: Set Your Mnemonic (Securely)
+
+**Option 1: From ThreeFold Config (Recommended)**
+```bash
+# If you have your mnemonic stored in the standard location:
+# Bash
+export TF_VAR_mnemonic=$(cat ~/.config/threefold/mnemonic)
+
+# Fish shell
+set -x TF_VAR_mnemonic (cat ~/.config/threefold/mnemonic)
+```
+
+**Option 2: Manual Entry (Secure)**
 ```bash
 # NEVER put your mnemonic directly in commands
 set +o history
 export TF_VAR_mnemonic="your_actual_mnemonic_phrase_here"
 set -o history
+```
+
+**Option 3: One-liner for Fish shell**
+```fish
+set -x TF_VAR_mnemonic (cat ~/.config/threefold/mnemonic) && make
 ```
 
 ### Step 4: Deploy Everything

@@ -55,7 +55,15 @@ git clone https://github.com/mik-tf/tfgrid-gateway
 cd tfgrid-gateway
 cp infrastructure/credentials.auto.tfvars.example infrastructure/credentials.auto.tfvars
 nano infrastructure/credentials.auto.tfvars  # Configure your node IDs
+
+# Set your mnemonic (choose one method):
+# Option 1: From standard ThreeFold config
+export TF_VAR_mnemonic=$(cat ~/.config/threefold/mnemonic)
+# Or for Fish shell: set -x TF_VAR_mnemonic (cat ~/.config/threefold/mnemonic)
+
+# Option 2: Manual entry
 export TF_VAR_mnemonic="your_mnemonic_here"
+
 make  # Deploy everything automatically!
 ```
 
