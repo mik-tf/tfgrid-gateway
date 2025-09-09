@@ -71,23 +71,7 @@ if sudo wg show gateway >/dev/null 2>&1; then
     fi
 fi
 
-# Check Mycelium if available
-echo -e "${YELLOW}Checking Mycelium status...${NC}"
-if command -v mycelium >/dev/null 2>&1; then
-    if sudo mycelium inspect --json >/dev/null 2>&1; then
-        MYCELIUM_IP=$(sudo mycelium inspect --json | jq -r .address 2>/dev/null || echo "")
-        if [[ -n "$MYCELIUM_IP" && "$MYCELIUM_IP" != "null" ]]; then
-            echo -e "${GREEN}✓ Mycelium active, IP: $MYCELIUM_IP${NC}"
-        else
-            echo -e "${YELLOW}⚠ Mycelium running but no IP assigned yet${NC}"
-        fi
-    else
-        echo -e "${RED}✗ Mycelium command failed${NC}"
-        ((ERRORS++))
-    fi
-else
-    echo -e "${YELLOW}⚠ Mycelium not installed or not in PATH${NC}"
-fi
+# Mycelium connectivity is validated by IPv6 ping and SSH tests in ping.sh
 
 # Summary
 echo ""
