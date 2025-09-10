@@ -41,22 +41,16 @@ server {
         add_header Content-Type text/plain;
     }
 
-    # VM proxy endpoints
-    location /vm7/ {
-        proxy_pass http://10.1.4.2:8081/;
+    # VM proxy endpoints (dynamically generated)
+{% for host in groups['internal'] %}
+    location /vm{{ host }}/ {
+        proxy_pass http://{{ hostvars[host]['wireguard_ip'] }}:{{ hostvars[host]['vm_port'] }}/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
-
-    location /vm8/ {
-        proxy_pass http://10.1.5.2:8082/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
+{% endfor %}
 
     # Main demo page
     location / {
