@@ -1,4 +1,4 @@
-.PHONY: help infrastructure configure connect ping clean ansible ansible-test inventory ready
+.PHONY: help infrastructure configure connect ping clean ansible ansible-test inventory ready demo demo-status demo-test full-demo quick-demo
 
 # Default target
 all: infrastructure inventory wireguard ready demo
@@ -21,8 +21,7 @@ help:
 	@echo "  make help            - Show this help message"
 	@echo ""
 	@echo "Demo and Testing:"
-	@echo "  make demo            - Deploy gateway with live demo status page"
-	@echo "  make vm-demo         - Deploy individual VM demo websites"
+	@echo "  make demo            - Deploy gateway with live demo status page and VM websites"
 	@echo "  make full-demo       - Complete deployment with gateway + VM demos + port forwarding"
 	@echo "  make demo-status     - Check demo status and connectivity"
 	@echo "  make demo-test       - Run comprehensive gateway tests"
@@ -173,12 +172,7 @@ demo-test:
 	@echo "Running comprehensive gateway tests..."
 	@./scripts/test-gateway.sh
 
-# Advanced demo commands
-vm-demo:
-	@echo "Deploying VM-specific demo websites..."
-	@cd ansible && ansible-playbook -i inventory.ini --extra-vars "gateway_type=${GATEWAY_TYPE:-gateway_nat} enable_demo=true enable_vm_demo=true configure_internal_vms=true" site.yml
-
-full-demo: infrastructure inventory ready demo vm-demo demo-status
+full-demo: infrastructure inventory ready demo demo-status
 	@echo "Full demo deployment completed!"
 	@echo "Gateway Status: http://$$(cd infrastructure && tofu output -json gateway_public_ip 2>/dev/null | jq -r . 2>/dev/null | sed 's|/.*||')"
 	@echo "VM 1 (port 8081): http://$$(cd infrastructure && tofu output -json gateway_public_ip 2>/dev/null | jq -r . 2>/dev/null | sed 's|/.*||'):8081"
