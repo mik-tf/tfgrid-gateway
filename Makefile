@@ -13,7 +13,6 @@ help:
 	@echo "  make inventory       - Generate Ansible inventory from Terraform outputs"
 	@echo "  make ansible         - Configure gateway using Ansible"
 	@echo "  make ansible-test    - Run gateway tests using Ansible"
-	@echo "  make configure       - Configure gateway services (legacy script method)"
 	@echo "  make connect         - Connect to gateway VM via SSH"
 	@echo "  make ping            - Test connectivity to all VMs"
 	@echo "  make address         - Show all VM addresses (WireGuard + Mycelium)"
@@ -53,13 +52,6 @@ help:
 infrastructure:
 	@echo "Deploying ThreeFold Grid infrastructure..."
 	@./scripts/infrastructure.sh
-
-# Gateway configuration
-configure:
-	@echo "Configuring gateway services..."
-	@echo "Note: This should be run on the gateway VM after infrastructure deployment"
-	@echo "SSH to the gateway VM first, then run this command"
-	@./scripts/configure.sh
 
 # Connect to gateway
 connect:
