@@ -10,17 +10,17 @@
       ignore_errors: yes
 
     - name: Enable masquerading for internal network
-      shell: nft add rule inet gateway_nat postrouting ip saddr 10.1.0.0/16 oifname eth0 masquerade
+      shell: nft add rule inet gateway_nat postrouting ip saddr 10.1.0.0/16 oifname {{ external_interface }} masquerade
       become: true
       ignore_errors: yes
 
     - name: Add port forwarding rules for VM 7 (port 8081)
-      shell: nft add rule inet gateway_nat prerouting iifname eth0 tcp dport 8081 dnat ip to 10.1.4.2:8081
+      shell: nft add rule inet gateway_nat prerouting iifname {{ external_interface }} tcp dport 8081 dnat ip to 10.1.4.2:8081
       become: true
       ignore_errors: yes
 
     - name: Add port forwarding rules for VM 8 (port 8082)
-      shell: nft add rule inet gateway_nat prerouting iifname eth0 tcp dport 8082 dnat ip to 10.1.5.2:8082
+      shell: nft add rule inet gateway_nat prerouting iifname {{ external_interface }} tcp dport 8082 dnat ip to 10.1.5.2:8082
       become: true
       ignore_errors: yes
 
@@ -70,12 +70,12 @@
       ignore_errors: yes
 
     - name: Allow forwarding between interfaces
-      shell: nft add rule inet firewall forward iifname wg0 oifname eth0 accept
+      shell: nft add rule inet firewall forward iifname wg0 oifname {{ external_interface }} accept
       become: true
       ignore_errors: yes
 
     - name: Allow return traffic
-      shell: nft add rule inet firewall forward iifname eth0 oifname wg0 ct state established,related accept
+      shell: nft add rule inet firewall forward iifname {{ external_interface }} oifname wg0 ct state established,related accept
       become: true
       ignore_errors: yes
 
