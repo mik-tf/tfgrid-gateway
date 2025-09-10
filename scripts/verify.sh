@@ -61,11 +61,34 @@ if sudo wg show gateway >/dev/null 2>&1; then
     echo -e "${YELLOW}Testing gateway connectivity...${NC}"
 
     GATEWAY_WG_IP=$(tofu output -json gateway_wireguard_ip 2>/dev/null | jq -r . 2>/dev/null || echo "")
+    GATEWAY_MYCELIUM_IP=$(tofu output -json gateway_mycelium_ip 2>/dev/null | jq -r . 2>/dev/null || echo "")
+
+    # Test ping connectivity
     if [[ -n "$GATEWAY_WG_IP" && "$GATEWAY_WG_IP" != "null" ]]; then
         if ping -c 2 -W 2 "$GATEWAY_WG_IP" >/dev/null 2>&1; then
             echo -e "${GREEN}✓ Gateway reachable via WireGuard${NC}"
         else
             echo -e "${RED}✗ Gateway not reachable via WireGuard${NC}"
+            ((ERRORS++))
+        fi
+    fi
+
+    # Test SSH connectivity via WireGuard
+    if [[ -n "$GATEWAY_WG_IP" && "$GATEWAY_WG_IP" != "null" ]]; then
+        if ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@"$GATEWAY_WG_IP" "echo 'SSH OK'" >/dev/null 2>&1; then
+            echo -e "${GREEN}✓ SSH to Gateway via WireGuard works${NC}"
+        else
+            echo -e "${RED}✗ SSH to Gateway via WireGuard failed${NC}"
+            ((ERRORS++))
+        fi
+    fi
+
+    # Test SSH connectivity via Mycelium
+    if [[ -n "$GATEWAY_MYCELIUM_IP" && "$GATEWAY_MYCELIUM_IP" != "null" && "$GATEWAY_MYCELIUM_IP" != "N/A" ]]; then
+        if ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@"$GATEWAY_MYCELIUM_IP" "echo 'SSH OK'" >/dev/null 2>&1; then
+            echo -e "${GREEN}✓ SSH to Gateway via Mycelium works${NC}"
+        else
+            echo -e "${RED}✗ SSH to Gateway via Mycelium failed${NC}"
             ((ERRORS++))
         fi
     fi
