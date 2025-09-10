@@ -226,7 +226,7 @@
                     <div class="value">{{ ansible_uptime_seconds | int | default(0) }} seconds</div>
 
                     <div class="label">Load Average:</div>
-                    <div class="value">{{ ansible_loadavg | default({}) | selectattr('key', 'equalto', '1-min') | map(attribute='value') | first | default('N/A') }}</div>
+                    <div class="value">{{ ansible_loadavg['1-min'] | default('N/A') }}</div>
 
                     <div class="label">Memory:</div>
                     <div class="value">{{ (ansible_memtotal_mb | int | default(0)) }} MB total</div>
