@@ -235,27 +235,25 @@
             <div class="card">
                 <h3>🖥️ Internal VMs</h3>
                 <div class="info-grid">
-                    <div class="label">VM 7 (Port 8081):</div>
+{% for host in groups['internal'] %}
+                    <div class="label">VM {{ host }} ({{ hostvars[host]['wireguard_ip'] }}):</div>
                     <div class="value">
-                        <a href="http://{{ ansible_default_ipv4.address }}:8081" target="_blank" class="vm-link">
-                            http://{{ ansible_default_ipv4.address }}:8081 ↗️
+                        <a href="http://{{ ansible_default_ipv4.address }}/vm{{ host }}/" target="_blank" class="vm-link">
+                            http://{{ ansible_default_ipv4.address }}/vm{{ host }}/ ↗️
                         </a>
                     </div>
-
-                    <div class="label">VM 8 (Port 8082):</div>
-                    <div class="value">
-                        <a href="http://{{ ansible_default_ipv4.address }}:8082" target="_blank" class="vm-link">
-                            http://{{ ansible_default_ipv4.address }}:8082 ↗️
-                        </a>
-                    </div>
+{% endfor %}
 
                     <div class="label">WireGuard IPs:</div>
-                    <div class="value">VM 7: 10.1.4.2 | VM 8: 10.1.5.2</div>
+                    <div class="value">
+{% for host in groups['internal'] %}VM {{ host }}: {{ hostvars[host]['wireguard_ip'] }}{% if not loop.last %} | {% endif %}{% endfor %}
+                    </div>
 
                     <div class="label">Mycelium IPs:</div>
                     <div class="value ipv6">
-                        VM 7: {{ internal_7_mycelium_ip | default('N/A') }}<br>
-                        VM 8: {{ internal_8_mycelium_ip | default('N/A') }}
+{% for host in groups['internal'] %}
+                        VM {{ host }}: {{ hostvars[host]['internal_' + host + '_mycelium_ip'] | default('N/A') }}{% if not loop.last %}<br>{% endif %}
+{% endfor %}
                     </div>
                 </div>
             </div>
@@ -267,8 +265,8 @@
                     <div class="feature" title="Firewall (nftables)">🛡️<br>Firewall (nftables)</div>
                     <div class="feature" title="WireGuard VPN">🔐<br>WireGuard VPN</div>
                     <div class="feature" title="Mycelium Network">🌐<br>Mycelium Network</div>
-                    <div class="feature" title="Port Forwarding">🔀<br>Port Forwarding</div>
-                    <div class="feature" title="Load Balancing Ready">⚖️<br>Load Balancing</div>
+                    <div class="feature" title="Path-Based Routing">🌐<br>Path-Based Routing</div>
+                    <div class="feature" title="Reverse Proxy">⚖️<br>Reverse Proxy</div>
                 </div>
             </div>
 
