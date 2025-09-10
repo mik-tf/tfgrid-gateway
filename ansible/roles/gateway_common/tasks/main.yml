@@ -47,49 +47,8 @@
     - "net.ipv6.conf.all.forwarding=1"
   become: true
 
-- name: Check if mycelium is installed
-  command: which mycelium
-  register: mycelium_check
-  ignore_errors: true
-  changed_when: false
-  become: true
-
-- name: Try to download Mycelium from GitHub releases
-  get_url:
-    url: "https://github.com/threefoldtech/mycelium/releases/download/v0.4.2/mycelium-x86_64-unknown-linux-gnu"
-    dest: /usr/local/bin/mycelium
-    mode: '0755'
-  become: true
-  ignore_errors: true
-  register: mycelium_download
-  when: mycelium_check.rc != 0
-
-- name: Alternative: Try to download Mycelium from different URL if first failed
-  get_url:
-    url: "https://github.com/threefoldtech/mycelium/releases/latest/download/mycelium-x86_64-unknown-linux-gnu.tar.gz"
-    dest: /tmp/mycelium.tar.gz
-  become: true
-  ignore_errors: true
-  register: mycelium_alt_download
-  when: mycelium_check.rc != 0 and mycelium_download is failed
-
-- name: Extract Mycelium if downloaded as tar.gz
-  unarchive:
-    src: /tmp/mycelium.tar.gz
-    dest: /usr/local/bin/
-    remote_src: yes
-  become: true
-  ignore_errors: true
-  when: mycelium_check.rc != 0 and mycelium_alt_download is not failed
-
-- name: Create mycelium user (only if download succeeded)
-  user:
-    name: mycelium
-    system: yes
-    shell: /usr/sbin/nologin
-  become: true
-  ignore_errors: true
-  when: mycelium_check.rc != 0 and (mycelium_download is not failed or mycelium_alt_download is not failed)
+# Mycelium installation temporarily disabled due to URL issues
+# TODO: Fix Mycelium download URLs and re-enable
 
 - name: Create required directories
   file:
