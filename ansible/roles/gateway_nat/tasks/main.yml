@@ -37,13 +37,20 @@
         state: present
       become: true
 
-    - name: Add port forwarding rules for internal VMs
+    - name: Add port forwarding rules for VM 7 (port 8081)
       nftables:
         table: inet gateway_nat
         chain: prerouting
-        rule: "iifname eth0 tcp dport {{ 8080 + (vm_index | int) }} dnat ip to {{ wireguard_ip }}:80"
+        rule: "iifname eth0 tcp dport 8081 dnat ip to 10.1.4.2:8081"
         state: present
-      when: wireguard_ip is defined and vm_index is defined
+      become: true
+
+    - name: Add port forwarding rules for VM 8 (port 8082)
+      nftables:
+        table: inet gateway_nat
+        chain: prerouting
+        rule: "iifname eth0 tcp dport 8082 dnat ip to 10.1.5.2:8082"
+        state: present
       become: true
 
     - name: Add custom port forwarding rules (if configured)
@@ -111,11 +118,11 @@
         state: present
       become: true
 
-    - name: Allow HTTP/HTTPS
+    - name: Allow HTTP/HTTPS and VM demo ports
       nftables:
         table: inet firewall
         chain: input
-        rule: "tcp dport { 80, 443 } accept"
+        rule: "tcp dport { 80, 443, 8081, 8082 } accept"
         state: present
       become: true
 
