@@ -1,4 +1,15 @@
 ---
+- name: Detect external interface
+  shell: ip route get 8.8.8.8 | awk '{print $5; exit}'
+  register: external_interface_result
+  become: true
+  ignore_errors: yes
+
+- name: Set external interface fact
+  set_fact:
+    external_interface: "{{ external_interface_result.stdout | default('eth0') }}"
+  when: external_interface_result is defined
+
 - name: Configure NAT-based gateway with nftables
   block:
     - name: Create NAT table and chains
@@ -80,12 +91,16 @@
       ignore_errors: yes
 
     - name: Set default input policy to drop (after allowing essential services)
-      shell: nft add rule inet firewall input policy drop
+      shell: |
+        nft delete chain inet firewall input
+        nft add chain inet firewall input { type filter hook input priority 0 \; policy drop \; }
       become: true
       ignore_errors: yes
 
     - name: Set default forward policy to drop
-      shell: nft add rule inet firewall forward policy drop
+      shell: |
+        nft delete chain inet firewall forward
+        nft add chain inet firewall forward { type filter hook forward priority 0 \; policy drop \; }
       become: true
       ignore_errors: yes
 
