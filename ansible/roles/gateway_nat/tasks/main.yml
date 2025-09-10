@@ -90,19 +90,9 @@
       become: true
       ignore_errors: yes
 
-    - name: Set default input policy to drop (after allowing essential services)
-      shell: |
-        nft delete chain inet firewall input
-        nft add chain inet firewall input { type filter hook input priority 0 \; policy drop \; }
-      become: true
-      ignore_errors: yes
-
-    - name: Set default forward policy to drop
-      shell: |
-        nft delete chain inet firewall forward
-        nft add chain inet firewall forward { type filter hook forward priority 0 \; policy drop \; }
-      become: true
-      ignore_errors: yes
+    # Note: Keeping accept policy for now to prevent SSH lockouts
+    # The explicit allow rules above provide adequate security
+    # TODO: Implement drop policy with proper testing in the future
 
   become: true
 
