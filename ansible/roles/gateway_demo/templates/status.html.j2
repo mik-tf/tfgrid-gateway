@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ThreeFold Grid Gateway Demo</title>
+    <title>🚀 ThreeFold Grid Gateway - Live Demo</title>
     <style>
         * {
             margin: 0;
@@ -15,6 +15,7 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #333;
+            line-height: 1.6;
             min-height: 100vh;
         }
 
@@ -26,12 +27,12 @@
 
         .header {
             text-align: center;
-            color: white;
             margin-bottom: 30px;
+            color: white;
         }
 
         .header h1 {
-            font-size: 3rem;
+            font-size: 2.5rem;
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
@@ -41,103 +42,107 @@
             opacity: 0.9;
         }
 
-        .status-grid {
+        .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
             gap: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
-        .status-card {
+        .card {
             background: white;
-            border-radius: 10px;
+            border-radius: 12px;
             padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
-        .status-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .status-card h3 {
-            color: #667eea;
-            margin-bottom: 15px;
-            font-size: 1.3rem;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
-        }
-
-        .status-item {
+        .card h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
+            align-items: center;
+            gap: 10px;
         }
 
-        .status-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
+        .card h3::before {
+            font-size: 1.2rem;
         }
 
-        .status-label {
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .label {
             font-weight: 600;
             color: #555;
-        }
-
-        .status-value {
-            font-family: 'Courier New', monospace;
-            background: #f8f9fa;
-            padding: 2px 8px;
-            border-radius: 4px;
             font-size: 0.9rem;
         }
 
-        .status-value.success {
+        .value {
+            font-family: 'Monaco', 'Menlo', monospace;
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            word-break: break-all;
+            border: 1px solid #e9ecef;
+        }
+
+        .value.ipv6 {
+            font-size: 0.75rem;
+            line-height: 1.2;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status.enabled {
             background: #d4edda;
             color: #155724;
         }
 
-        .status-value.warning {
-            background: #fff3cd;
-            color: #856404;
+        .status.active {
+            background: #d1ecf1;
+            color: #0c5460;
         }
 
-        .features-grid {
+        .features {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
             margin-top: 20px;
         }
 
-        .feature-item {
-            display: flex;
-            align-items: center;
-            padding: 10px;
+        .feature {
+            text-align: center;
+            padding: 15px;
             background: #f8f9fa;
             border-radius: 8px;
+            border: 1px solid #e9ecef;
         }
 
-        .feature-item.enabled {
-            background: #d4edda;
-            border-left: 4px solid #28a745;
-        }
-
-        .feature-item.disabled {
-            background: #f8d7da;
-            border-left: 4px solid #dc3545;
-        }
-
-        .feature-icon {
-            margin-right: 10px;
-            font-size: 1.2rem;
+        .feature::before {
+            font-size: 1.5rem;
+            display: block;
+            margin-bottom: 8px;
         }
 
         .footer {
             text-align: center;
+            margin-top: 30px;
             color: white;
-            margin-top: 40px;
             opacity: 0.8;
         }
 
@@ -146,101 +151,18 @@
             text-decoration: underline;
         }
 
-        .api-link {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 5px;
-            text-decoration: none;
-            color: white;
-            font-weight: 600;
-        }
-
-        .api-link:hover {
-            background: rgba(255,255,255,0.3);
-        }
-
-        .vm-links {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .vm-link-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border-left: 4px solid #28a745;
-        }
-
-        .vm-info {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .vm-info strong {
-            font-size: 1.1rem;
-            color: #2c3e50;
-        }
-
-        .vm-port {
-            font-size: 0.85rem;
-            color: #666;
-            background: #e9ecef;
-            padding: 2px 8px;
-            border-radius: 12px;
-            display: inline-block;
-        }
-
-        .vm-link-button {
-            padding: 8px 16px;
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
-        }
-
-        .vm-link-button:hover {
-            background: linear-gradient(135deg, #218838, #1aa085);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
-        }
-
-        .vm-note {
-            margin-top: 15px;
-            padding: 10px;
-            background: #e8f5e8;
-            border-radius: 6px;
-            border-left: 4px solid #28a745;
-        }
-
         @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2rem;
-            }
-
-            .status-grid {
+            .grid {
                 grid-template-columns: 1fr;
             }
 
-            .vm-link-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
             }
 
-            .vm-link-button {
-                align-self: stretch;
-                text-align: center;
+            .header h1 {
+                font-size: 2rem;
             }
         }
     </style>
@@ -252,131 +174,77 @@
             <p>IPv4 Gateway for IPv6-Only VMs - Live Demo</p>
         </div>
 
-        <div class="status-grid">
-            <div class="status-card">
+        <div class="grid">
+            <div class="card">
                 <h3>🌐 Network Configuration</h3>
-                <div class="status-item">
-                    <span class="status-label">Gateway Type:</span>
-                    <span class="status-value success">{{ gateway_type | default('gateway_nat') }}</span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">Network:</span>
-                    <span class="status-value">{{ network | default('test') }}</span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">Public IPv4:</span>
-                    <span class="status-value">{{ ansible_default_ipv4.address }}</span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">Hostname:</span>
-                    <span class="status-value">{{ ansible_hostname }}</span>
+                <div class="info-grid">
+                    <div class="label">Gateway Type:</div>
+                    <div class="value">{{ gateway_type | default('gateway_nat') | title }}</div>
+
+                    <div class="label">Network:</div>
+                    <div class="value">{{ network | default('test') }}</div>
+
+                    <div class="label">Public IPv4:</div>
+                    <div class="value">{{ ansible_default_ipv4.address | default('N/A') }}</div>
+
+                    <div class="label">Hostname:</div>
+                    <div class="value">{{ ansible_hostname | default('gateway') }}</div>
                 </div>
             </div>
 
-            <div class="status-card">
+            <div class="card">
                 <h3>🔒 Secure Networking</h3>
-                <div class="status-item">
-                    <span class="status-label">WireGuard IP:</span>
-                    <span class="status-value">{{ wireguard_ip | default('N/A') }}</span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">Mycelium IP:</span>
-                    <span class="status-value">{{ mycelium_ip | default('N/A') }}</span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">IP Forwarding:</span>
-                    <span class="status-value success">Enabled</span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">Firewall:</span>
-                    <span class="status-value success">Active</span>
+                <div class="info-grid">
+                    <div class="label">WireGuard IP:</div>
+                    <div class="value">{{ wireguard_ip | default('10.1.3.2') }}</div>
+
+                    <div class="label">Mycelium IP:</div>
+                    <div class="value ipv6">{{ mycelium_ip | default('Not assigned') }}</div>
+
+                    <div class="label">IP Forwarding:</div>
+                    <div class="status enabled">Enabled ✓</div>
+
+                    <div class="label">Firewall:</div>
+                    <div class="status active">Active ✓</div>
                 </div>
             </div>
 
-            <div class="status-card">
+            <div class="card">
                 <h3>⚙️ Gateway Features</h3>
-                <div class="features-grid">
-                    <div class="feature-item enabled">
-                        <span class="feature-icon">🔥</span>
-                        <span>NAT/Masquerading</span>
-                    </div>
-                    <div class="feature-item enabled">
-                        <span class="feature-icon">🛡️</span>
-                        <span>Firewall (nftables)</span>
-                    </div>
-                    <div class="feature-item {{ 'enabled' if wg_config is defined else 'disabled' }}">
-                        <span class="feature-icon">🔐</span>
-                        <span>WireGuard VPN</span>
-                    </div>
-                    <div class="feature-item {{ 'enabled' if mycelium_ip is defined else 'disabled' }}">
-                        <span class="feature-icon">🌐</span>
-                        <span>Mycelium Network</span>
-                    </div>
+                <div class="features">
+                    <div class="feature" title="NAT/Masquerading">🔥<br>NAT/Masquerading</div>
+                    <div class="feature" title="Firewall (nftables)">🛡️<br>Firewall (nftables)</div>
+                    <div class="feature" title="WireGuard VPN">🔐<br>WireGuard VPN</div>
+                    <div class="feature" title="Mycelium Network">🌐<br>Mycelium Network</div>
                 </div>
             </div>
-        </div>
 
-        <div class="status-card">
-            <h3>🖥️ Internal VMs</h3>
-            <p style="margin-bottom: 15px; color: #666; font-size: 0.9rem;">
-                Access individual VM websites through port forwarding:
-            </p>
-            <div class="vm-links">
-                <div class="vm-link-item">
-                    <div class="vm-info">
-                        <strong>VM 7</strong>
-                        <span class="vm-port">Port 8081</span>
-                    </div>
-                    <a href="http://{{ ansible_default_ipv4.address }}:8081" class="vm-link-button" target="_blank">
-                        🌐 Visit VM 7
-                    </a>
-                </div>
-                <div class="vm-link-item">
-                    <div class="vm-info">
-                        <strong>VM 8</strong>
-                        <span class="vm-port">Port 8082</span>
-                    </div>
-                    <a href="http://{{ ansible_default_ipv4.address }}:8082" class="vm-link-button" target="_blank">
-                        🌐 Visit VM 8
-                    </a>
-                </div>
-            </div>
-            <div class="vm-note">
-                <small style="color: #666;">
-                    💡 Each VM website shows its unique network configuration, WireGuard IP, Mycelium IP, and system information.
-                </small>
-            </div>
-        </div>
+            <div class="card">
+                <h3>📊 System Information</h3>
+                <div class="info-grid">
+                    <div class="label">Uptime:</div>
+                    <div class="value">{{ ansible_uptime_seconds | int | default(0) }} seconds</div>
 
-        <div class="status-card">
-            <h3>📊 System Information</h3>
-            <div class="status-item">
-                <span class="status-label">Uptime:</span>
-                <span class="status-value">{{ ansible_uptime_seconds | default('N/A') }} seconds</span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">Load Average:</span>
-                <span class="status-value">{{ ansible_loadavg['1min'] | default('N/A') }}</span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">Memory:</span>
-                <span class="status-value">{{ ansible_memory_mb['real']['total'] | default('N/A') }} MB total</span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">Architecture:</span>
-                <span class="status-value">{{ ansible_architecture | default('N/A') }}</span>
+                    <div class="label">Load Average:</div>
+                    <div class="value">{{ ansible_loadavg | default({}) | selectattr('key', 'equalto', '1-min') | map(attribute='value') | first | default('N/A') }}</div>
+
+                    <div class="label">Memory:</div>
+                    <div class="value">{{ (ansible_memtotal_mb | int | default(0)) }} MB total</div>
+
+                    <div class="label">Architecture:</div>
+                    <div class="value">{{ ansible_architecture | default('x86_64') }}</div>
+                </div>
             </div>
         </div>
 
         <div class="footer">
             <p>
-                <strong>ThreeFold Grid Gateway Demo</strong><br>
-                This gateway enables IPv6-only VMs to access the internet through NAT and secure tunneling.
+                🚀 <strong>ThreeFold Grid Gateway Demo</strong> |
+                <a href="/api/status" target="_blank">JSON API</a> |
+                <a href="/health" target="_blank">Health Check</a>
             </p>
-            <a href="/api/status" class="api-link">📡 View JSON API</a>
-            <p style="margin-top: 15px; font-size: 0.9rem;">
-                Built with ❤️ for the ThreeFold Community<br>
-                <a href="https://github.com/mik-tf/tfgrid-gateway" target="_blank">View Source Code</a>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                Real-time status of your IPv4 gateway providing internet access to IPv6-only VMs
             </p>
         </div>
     </div>

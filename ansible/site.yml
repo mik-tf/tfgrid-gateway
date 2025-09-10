@@ -14,13 +14,18 @@
 - name: Configure Internal VMs
   hosts: internal
   become: yes
-  roles:
-    - role: gateway_common
+  tasks:
+    - name: Include gateway_common role
+      include_role:
+        name: gateway_common
       tags: [common]
-    - role: vm_demo
+      when: configure_internal_vms | default(false)
+
+    - name: Include vm_demo role
+      include_role:
+        name: vm_demo
       tags: [vm-demo]
-      when: enable_vm_demo | default(false)
-  when: configure_internal_vms | default(false)
+      when: (configure_internal_vms | default(false)) and (enable_vm_demo | default(false))
 
 - name: Setup Testing Infrastructure
   hosts: all

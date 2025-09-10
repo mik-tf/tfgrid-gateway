@@ -58,14 +58,32 @@
     - name: Download and install Mycelium
       when: mycelium_check.rc != 0
       block:
-        - name: Download Mycelium binary
+        - name: Try to download Mycelium from GitHub releases
           get_url:
-            url: "https://github.com/threefoldtech/mycelium/releases/latest/download/mycelium-x86_64-unknown-linux-gnu"
+            url: "https://github.com/threefoldtech/mycelium/releases/download/v0.4.2/mycelium-x86_64-unknown-linux-gnu"
             dest: /usr/local/bin/mycelium
             mode: '0755'
           become: true
           ignore_errors: true
           register: mycelium_download
+
+        - name: Alternative: Try to download Mycelium from different URL if first failed
+          when: mycelium_download is failed
+          get_url:
+            url: "https://github.com/threefoldtech/mycelium/releases/latest/download/mycelium-x86_64-unknown-linux-gnu.tar.gz"
+            dest: /tmp/mycelium.tar.gz
+          become: true
+          ignore_errors: true
+          register: mycelium_alt_download
+
+        - name: Extract Mycelium if downloaded as tar.gz
+          when: mycelium_alt_download is not failed
+          unarchive:
+            src: /tmp/mycelium.tar.gz
+            dest: /usr/local/bin/
+            remote_src: yes
+          become: true
+          ignore_errors: true
 
         - name: Create mycelium user (only if download succeeded)
           user:
@@ -73,7 +91,7 @@
             system: yes
             shell: /usr/sbin/nologin
           become: true
-          when: mycelium_download is not failed
+          when: (mycelium_download is not failed) or (mycelium_alt_download is not failed)
 
   become: true
   ignore_errors: true
@@ -88,10 +106,17 @@
     - /var/log/gateway
   become: true
 
-- name: Set hostname based on inventory name
+- name: Set hostname based on inventory name (skip if invalid)
   hostname:
-    name: "{{ inventory_hostname }}"
+    name: "{{ inventory_hostname | replace('_', '-') }}"
   become: true
+  ignore_errors: true
+  register: hostname_result
+
+- name: Show hostname setting result
+  debug:
+    msg: "Hostname setting result: {{ hostname_result }}"
+  when: hostname_result is defined
 
 - name: Update /etc/hosts with inventory name
   lineinfile:
