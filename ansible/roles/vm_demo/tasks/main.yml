@@ -65,13 +65,15 @@
       VM ID: {{ vm_id | default(inventory_hostname) }}
       WireGuard IP: {{ wireguard_ip | default('N/A') }}
       Mycelium IP: {{ mycelium_ip | default('N/A') }}
+      VM Port: {{ vm_port | default('8080') }}
       Hostname: {{ ansible_hostname }}
       Gateway Type: {{ gateway_type | default('gateway_nat') }}
 
-      VM Status Page: http://{{ wireguard_ip | default('localhost') }}
+      VM Status Page: http://{{ wireguard_ip | default('localhost') }}:{{ vm_port | default('8080') }}
 
       Features:
       - Individual VM identification
       - Dynamic network information
       - Gateway connectivity details
+      - Port-specific configuration
       - Real-time system metrics
