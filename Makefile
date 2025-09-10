@@ -171,7 +171,7 @@ demo-test:
 # Advanced demo commands
 vm-demo:
 	@echo "Deploying VM-specific demo websites..."
-	@cd ansible && ansible-playbook -i inventory.ini --extra-vars "gateway_type=${GATEWAY_TYPE:-gateway_nat} enable_vm_demo=true" site.yml
+	@cd ansible && ansible-playbook -i inventory.ini --extra-vars "gateway_type=${GATEWAY_TYPE:-gateway_nat} enable_demo=true enable_vm_demo=true configure_internal_vms=true" site.yml
 
 full-demo: infrastructure inventory demo vm-demo demo-status
 	@echo "Full demo deployment completed!"
