@@ -47,9 +47,6 @@
     - "net.ipv6.conf.all.forwarding=1"
   become: true
 
-# Mycelium installation temporarily disabled due to URL issues
-# TODO: Fix Mycelium download URLs and re-enable
-
 - name: Create required directories
   file:
     path: "{{ item }}"
