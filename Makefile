@@ -1,7 +1,7 @@
 .PHONY: help infrastructure configure connect ping clean ansible ansible-test inventory ready
 
 # Default target
-all: infrastructure inventory wireguard ready ansible demo vm-demo
+all: infrastructure inventory wireguard ready demo
 
 # Help target
 help:
@@ -29,7 +29,7 @@ help:
 	@echo "  make quick-demo      - Complete deployment with demo (infra + config + demo)"
 	@echo ""
 	@echo "Quick deployment:"
-	@echo "  make                 - Deploy everything (infrastructure inventory wireguard ready ansible demo vm-demo)"
+	@echo "  make                 - Deploy everything (infrastructure inventory wireguard ready demo)"
 	@echo "  make quick-demo      - Deploy with live demo status page"
 	@echo ""
 	@echo "Gateway types (set GATEWAY_TYPE environment variable):"
