@@ -1,7 +1,7 @@
-.PHONY: help infrastructure configure connect ping clean ansible ansible-test inventory
+.PHONY: help infrastructure configure connect ping clean ansible ansible-test inventory ready
 
 # Default target
-all: infrastructure inventory wireguard ansible demo vm-demo
+all: infrastructure inventory wireguard ready ansible demo vm-demo
 
 # Help target
 help:
@@ -11,6 +11,7 @@ help:
 	@echo "Available targets:"
 	@echo "  make infrastructure  - Deploy VMs and network infrastructure"
 	@echo "  make inventory       - Generate Ansible inventory from Terraform outputs"
+	@echo "  make ready           - Wait for VMs to be ready and accessible"
 	@echo "  make ansible         - Configure gateway using Ansible"
 	@echo "  make ansible-test    - Run gateway tests using Ansible"
 	@echo "  make connect         - Connect to gateway VM via SSH"
@@ -28,7 +29,7 @@ help:
 	@echo "  make quick-demo      - Complete deployment with demo (infra + config + demo)"
 	@echo ""
 	@echo "Quick deployment:"
-	@echo "  make                 - Deploy everything (infrastructure + inventory + ansible)"
+	@echo "  make                 - Deploy everything (infrastructure inventory wireguard ready ansible demo vm-demo)"
 	@echo "  make quick-demo      - Deploy with live demo status page"
 	@echo ""
 	@echo "Gateway types (set GATEWAY_TYPE environment variable):"
@@ -87,6 +88,11 @@ clean:
 inventory:
 	@echo "Generating Ansible inventory..."
 	@./scripts/generate_inventory.sh
+
+# Check VM readiness
+ready:
+	@echo "Checking VM readiness..."
+	@./scripts/ready.sh
 
 # Configure with Ansible
 ansible:
@@ -172,7 +178,7 @@ vm-demo:
 	@echo "Deploying VM-specific demo websites..."
 	@cd ansible && ansible-playbook -i inventory.ini --extra-vars "gateway_type=${GATEWAY_TYPE:-gateway_nat} enable_demo=true enable_vm_demo=true configure_internal_vms=true" site.yml
 
-full-demo: infrastructure inventory demo vm-demo demo-status
+full-demo: infrastructure inventory ready demo vm-demo demo-status
 	@echo "Full demo deployment completed!"
 	@echo "Gateway Status: http://$$(cd infrastructure && tofu output -json gateway_public_ip 2>/dev/null | jq -r . 2>/dev/null | sed 's|/.*||')"
 	@echo "VM 1 (port 8081): http://$$(cd infrastructure && tofu output -json gateway_public_ip 2>/dev/null | jq -r . 2>/dev/null | sed 's|/.*||'):8081"
