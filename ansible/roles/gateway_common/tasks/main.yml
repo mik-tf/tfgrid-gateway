@@ -68,22 +68,22 @@
           register: mycelium_download
 
         - name: Alternative: Try to download Mycelium from different URL if first failed
-          when: mycelium_download is failed
           get_url:
             url: "https://github.com/threefoldtech/mycelium/releases/latest/download/mycelium-x86_64-unknown-linux-gnu.tar.gz"
             dest: /tmp/mycelium.tar.gz
           become: true
           ignore_errors: true
           register: mycelium_alt_download
+          when: mycelium_download is failed
 
         - name: Extract Mycelium if downloaded as tar.gz
-          when: mycelium_alt_download is not failed
           unarchive:
             src: /tmp/mycelium.tar.gz
             dest: /usr/local/bin/
             remote_src: yes
           become: true
           ignore_errors: true
+          when: mycelium_alt_download is not failed
 
         - name: Create mycelium user (only if download succeeded)
           user:
