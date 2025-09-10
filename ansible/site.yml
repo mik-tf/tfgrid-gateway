@@ -5,7 +5,7 @@
   roles:
     - role: gateway_common
       tags: [common]
-    - role: "{{ gateway_type }}"
+    - role: gateway_nat
       tags: [gateway]
     - role: gateway_demo
       tags: [demo]

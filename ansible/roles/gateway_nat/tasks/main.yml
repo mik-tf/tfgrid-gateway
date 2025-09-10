@@ -92,7 +92,7 @@
   become: true
 
 - name: Make nftables rules persistent
-  command: nft list ruleset > /etc/nftables.conf
+  shell: nft list ruleset > /etc/nftables.conf
   become: true
 
 - name: Enable nftables service
