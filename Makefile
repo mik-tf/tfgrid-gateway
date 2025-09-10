@@ -1,7 +1,7 @@
 .PHONY: help infrastructure configure connect ping clean ansible ansible-test inventory ready demo demo-status demo-test full-demo quick-demo
 
 # Default target
-all: infrastructure inventory wireguard ready demo
+all: infrastructure inventory wireguard demo
 
 # Help target
 help:
@@ -11,7 +11,6 @@ help:
 	@echo "Available targets:"
 	@echo "  make infrastructure  - Deploy VMs and network infrastructure"
 	@echo "  make inventory       - Generate Ansible inventory from Terraform outputs"
-	@echo "  make ready           - Wait for VMs to be ready and accessible"
 	@echo "  make ansible         - Configure gateway using Ansible"
 	@echo "  make ansible-test    - Run gateway tests using Ansible"
 	@echo "  make connect         - Connect to gateway VM via SSH"
@@ -87,11 +86,6 @@ clean:
 inventory:
 	@echo "Generating Ansible inventory..."
 	@./scripts/generate_inventory.sh
-
-# Check VM readiness
-ready:
-	@echo "Checking VM readiness..."
-	@./scripts/ready.sh
 
 # Configure with Ansible
 ansible:
