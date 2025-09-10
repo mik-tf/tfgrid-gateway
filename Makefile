@@ -1,7 +1,7 @@
 .PHONY: help infrastructure configure connect ping clean ansible ansible-test inventory
 
 # Default target
-all: infrastructure inventory ansible
+all: infrastructure inventory wireguard ansible demo vm-demo
 
 # Help target
 help:

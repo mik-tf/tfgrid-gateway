@@ -32,9 +32,11 @@ The gateway VMs live within the same network as your internal VMs, providing sec
 - Linux/macOS system with bash
 - [OpenTofu](https://opentofu.org/) (or Terraform) installed
 - [Ansible](https://www.ansible.com/) installed
-- [WireGuard](https://www.wireguard.com/) installed
+- [WireGuard](https://www.wireguard.com/) installed (required for Ansible connectivity to VMs)
 - [jq](https://stedolan.github.io/jq/) installed
 - ThreeFold account with sufficient TFT balance
+
+**Important**: WireGuard must be installed and `make wireguard` must be run before Ansible can connect to the internal VMs.
 
 ### Installing Ansible Dependencies
 
@@ -65,6 +67,32 @@ export TF_VAR_mnemonic=$(cat ~/.config/threefold/mnemonic)
 export TF_VAR_mnemonic="your_mnemonic_here"
 
 make  # Deploy everything automatically!
+```
+
+### Step-by-Step Deployment (Recommended for First Time)
+```bash
+# 1. Deploy infrastructure
+make infrastructure
+
+# 2. Generate Ansible inventory
+make inventory
+
+# 3. Set up local WireGuard connection (required for Ansible)
+make wireguard
+
+# 4. Configure gateway with Ansible
+make ansible
+
+# 5. Deploy gateway demo
+make demo
+
+# 6. Deploy VM demo websites with port forwarding
+make vm-demo
+
+# 7. Test everything
+make demo-test
+curl http://YOUR_GATEWAY_IP:8081  # VM7 website
+curl http://YOUR_GATEWAY_IP:8082  # VM8 website
 ```
 
 ### Access Your Gateway
@@ -106,10 +134,13 @@ Deploy a fully functional gateway with live status page in one command:
 # Complete demo deployment (infrastructure + configuration + demo)
 make quick-demo
 
-# Or step-by-step
+# Or step-by-step (recommended for first time)
 make infrastructure  # Deploy VMs and network
 make inventory      # Generate Ansible inventory
+make wireguard      # Set up local WireGuard (required for Ansible)
+make ansible        # Configure gateway with Ansible
 make demo          # Deploy demo with status page
+make vm-demo       # Deploy VM websites with port forwarding
 make demo-status   # Check demo URLs and connectivity
 ```
 
@@ -186,17 +217,24 @@ curl http://YOUR_GATEWAY_IP:8082
 ### Advanced Demo Commands
 
 ```bash
-# Deploy only VM-specific websites
+# Deploy only VM-specific websites (requires prior setup)
 make vm-demo
 
 # Deploy complete system with port forwarding
 make full-demo
 
+# Step-by-step deployment (recommended)
+make infrastructure inventory wireguard ansible demo vm-demo
+
 # Check all demo URLs and ports
 make demo-status
 
-# Run comprehensive tests
+# Run comprehensive tests (gateway only)
 make demo-test
+
+# Test VM websites specifically
+curl http://YOUR_GATEWAY_IP:8081  # VM7
+curl http://YOUR_GATEWAY_IP:8082  # VM8
 ```
 
 ### What Each VM Website Shows
@@ -205,12 +243,13 @@ Each internal VM's website displays:
 
 - **🆔 VM Identity**: Unique VM identifier and hostname
 - **🌐 Network Configuration**:
-  - WireGuard IP within the private network
+  - WireGuard IP within the private network (10.1.x.x)
   - Mycelium IPv6 address
-  - Gateway connection status
-- **⚙️ System Information**: CPU, memory, architecture
+  - Port number the VM is listening on (8081/8082)
+- **⚙️ System Information**: CPU, memory, architecture, kernel
 - **🔗 Gateway Details**: Gateway type, network, connection status
 - **📡 API Endpoints**: JSON API for programmatic access
+- **⏰ Real-time Data**: Current timestamp and system metrics
 
 ### Perfect For
 
