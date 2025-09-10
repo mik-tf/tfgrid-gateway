@@ -1,7 +1,6 @@
 ---
 # Gateway configuration
 gateway_type: "{{ lookup('env', 'GATEWAY_TYPE') | default('gateway_nat', true) }}"
-external_interface: eth0
 
 # Port forwarding (for NAT gateway)
 port_forwards: []
