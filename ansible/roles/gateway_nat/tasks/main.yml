@@ -80,18 +80,18 @@
       become: true
       ignore_errors: yes
 
-    - name: Allow forwarding between interfaces
-      shell: nft add rule inet firewall forward iifname wg0 oifname {{ external_interface }} accept
+    - name: Allow forwarding from internal to external
+      shell: nft add rule inet firewall forward iifname ens2 oifname {{ external_interface }} accept
       become: true
       ignore_errors: yes
 
     - name: Allow DNAT forwarding for VM demo ports
-      shell: nft add rule inet firewall forward iifname {{ external_interface }} oifname wg0 tcp dport { 8081, 8082 } accept
+      shell: nft add rule inet firewall forward iifname {{ external_interface }} oifname ens2 tcp dport { 8081, 8082 } accept
       become: true
       ignore_errors: yes
 
     - name: Allow return traffic
-      shell: nft add rule inet firewall forward iifname {{ external_interface }} oifname wg0 ct state established,related accept
+      shell: nft add rule inet firewall forward iifname {{ external_interface }} oifname ens2 ct state established,related accept
       become: true
       ignore_errors: yes
 
