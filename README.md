@@ -297,14 +297,89 @@ mycelium inspect --json
 sudo nft list table ip nat
 ```
 
+## Testing and Monitoring Commands
+
+The tfgrid-gateway project includes comprehensive testing and monitoring tools to validate your deployment and troubleshoot issues.
+
+### Network Address Discovery
+
+```bash
+# Show all VM addresses and connection information
+make address
+```
+
+**Example output:**
+```
+ThreeFold Grid Gateway VM Addresses
+====================================
+
+🌐 Public Access:
+  Gateway: http://185.206.122.150
+  VM 7:   http://185.206.122.150:8081
+  VM 8:   http://185.206.122.150:8082
+
+🔐 Private Networks (via WireGuard):
+  Gateway: 10.1.3.2
+  VM 7: 10.1.4.2
+  VM 8: 10.1.5.2
+
+🌍 Mycelium IPv6 Overlay:
+  Gateway: 486:60b4:6046:5562:ff0f:f7c9:aa05:bd19
+  VM 7: 56a:eacd:c0d3:b30a:ff0f:5dc5:21f0:372f
+  VM 8: 4e9:2b5b:72f:e139:ff0f:3cd2:29b9:51e9
+
+💡 Usage Tips:
+  • Use 'make wireguard' to connect to private networks
+  • Public websites work without WireGuard
+  • SSH to private IPs requires WireGuard tunnel
+```
+
+### Connectivity Testing
+
+```bash
+# Test connectivity to all VMs (IPv4 + IPv6 + SSH)
+make ping
+```
+
+**Tests performed:**
+- IPv4 ping via WireGuard to all VMs
+- IPv6 ping via Mycelium to all VMs
+- SSH connectivity via WireGuard
+- SSH connectivity via Mycelium IPv6
+
+### Deployment Verification
+
+```bash
+# Comprehensive deployment health check
+make verify
+```
+
+**Validates:**
+- Terraform state integrity
+- Gateway public IP assignment
+- WireGuard configuration and interface
+- IPv4 connectivity via WireGuard
+- SSH connectivity via WireGuard
+- SSH connectivity via Mycelium IPv6
+
+### Demo System Testing
+
+```bash
+# Check demo status and URLs
+make demo-status
+
+# Run comprehensive gateway tests
+make demo-test
+```
+
 ## Additional Management Commands
 
 ```bash
-# Check connectivity to all VMs
-make ping
+# Connect to gateway VM via SSH
+make connect
 
-# Verify gateway configuration
-make verify
+# Set up WireGuard VPN for private network access
+make wireguard
 
 # Clean up deployment resources
 make clean
