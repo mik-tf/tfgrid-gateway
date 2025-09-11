@@ -7,6 +7,10 @@
       tags: [common]
     - role: gateway_nat
       tags: [gateway]
+      when: gateway_type | default('gateway_nat') == 'gateway_nat'
+    - role: gateway_proxy
+      tags: [gateway]
+      when: gateway_type | default('gateway_nat') == 'gateway_proxy'
     - role: gateway_demo
       tags: [demo]
       when: enable_demo | default(false)

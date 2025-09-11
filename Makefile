@@ -106,7 +106,7 @@ infrastructure:
 # Generate Ansible inventory
 inventory:
 	@echo "Generating Ansible inventory..."
-	@MAIN_NETWORK=${MAIN_NETWORK:-wireguard} NETWORK_MODE=${NETWORK_MODE:-wireguard-only} ./scripts/generate_inventory.sh
+	@MAIN_NETWORK=${MAIN_NETWORK} NETWORK_MODE=${NETWORK_MODE} ./scripts/generate_inventory.sh
 
 # Test connectivity
 ping:

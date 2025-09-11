@@ -3,7 +3,7 @@
 gateway_type: "{{ lookup('env', 'GATEWAY_TYPE') | default('gateway_nat', true) }}"
 
 # Network configuration
-network_mode: "wireguard-only"
+network_mode: "mycelium"
 
 # Port forwarding (for NAT gateway)
 port_forwards: []
