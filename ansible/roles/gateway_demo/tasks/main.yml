@@ -22,6 +22,8 @@
     owner: www-data
     group: www-data
     mode: '0644'
+  vars:
+    gateway_type: "{{ gateway_type | default('gateway_nat') }}"
   become: true
 
 - name: Configure nginx for gateway demo

@@ -42,7 +42,7 @@
             <h2>VM Information</h2>
             <p><strong>VM ID:</strong> {{ vm_id | default(inventory_hostname) }}</p>
             <p><strong>WireGuard IP:</strong> {{ wireguard_ip | default('N/A') }}</p>
-            <p><strong>Mycelium IP:</strong> {{ mycelium_ip | default('N/A') }}</p>
+            <p><strong>Mycelium IP:</strong> {{ hostvars['gateway']['internal_' + inventory_hostname + '_mycelium_ip'] | default('N/A') }}</p>
             <p><strong>Port:</strong> <span class="port-info">{{ vm_port | default('8080') }}</span></p>
             <p><strong>Hostname:</strong> {{ ansible_hostname }}</p>
             <p><strong>Timestamp:</strong> {{ ansible_date_time.iso8601 }}</p>

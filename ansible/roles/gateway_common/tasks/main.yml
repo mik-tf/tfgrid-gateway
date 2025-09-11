@@ -1,4 +1,8 @@
 ---
+- name: Gather facts
+  setup:
+  become: true
+
 - name: Update apt cache
   apt:
     update_cache: yes

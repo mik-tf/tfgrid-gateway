@@ -202,7 +202,7 @@
                 <h3>🌐 Network Configuration</h3>
                 <div class="info-grid">
                     <div class="label">Gateway Type:</div>
-                    <div class="value">{{ gateway_type | default('gateway_nat') | title }}</div>
+                    <div class="value">Gateway NAT</div>
 
                     <div class="label">Network:</div>
                     <div class="value">{{ network | default('test') }}</div>
@@ -216,13 +216,13 @@
             </div>
 
             <div class="card">
-                <h3>🔒 Secure Networking</h3>
+                <h3>🔒 Gateway VM Networking</h3>
                 <div class="info-grid">
                     <div class="label">WireGuard IP:</div>
                     <div class="value">{{ wireguard_ip | default('10.1.3.2') }}</div>
 
                     <div class="label">Mycelium IP:</div>
-                    <div class="value ipv6">{{ mycelium_ip | default('Not assigned') }}</div>
+                    <div class="value ipv6">{{ hostvars[inventory_hostname]['mycelium_ip'] | default('N/A') }}</div>
 
                     <div class="label">IP Forwarding:</div>
                     <div class="status enabled">Enabled ✓</div>
@@ -276,8 +276,6 @@
                     <div class="label">Uptime:</div>
                     <div class="value">{{ ansible_uptime_seconds | int | default(0) }} seconds</div>
 
-                    <div class="label">Load Average:</div>
-                    <div class="value">{{ ansible_loadavg['1-min'] | default('N/A') }}</div>
 
                     <div class="label">Memory:</div>
                     <div class="value">{{ (ansible_memtotal_mb | int | default(0)) }} MB total</div>
