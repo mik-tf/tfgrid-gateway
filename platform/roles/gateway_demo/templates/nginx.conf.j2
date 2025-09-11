@@ -18,7 +18,7 @@ server {
     location /api/status {
         default_type application/json;
         return 200 '{
-            "gateway_type": "{{ gateway_type | default("gateway_nat") }}",
+            "gateway_type": "gateway_nat",
             "public_ipv4": "{{ ansible_default_ipv4.address | default("N/A") }}",
             "network": "{{ network | default("test") }}",
             "hostname": "{{ ansible_hostname | default("gateway") }}",
