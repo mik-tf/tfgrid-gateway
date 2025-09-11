@@ -70,14 +70,8 @@ EOF
 
 # Add internal VMs with port assignments
 if [[ "$MAIN_NETWORK" == "mycelium" ]]; then
-    # Use mycelium IPs for ansible_host
-    echo "$INTERNAL_WIREGUARD_IPS" | jq -r 'to_entries | sort_by(.key | tonumber) | .[].key' | \
-    while read -r vm_id; do
-        wireguard_ip=$(echo "$INTERNAL_WIREGUARD_IPS" | jq -r ".\"$vm_id\"")
-        mycelium_ip=$(echo "$INTERNAL_MYCELIUM_IPS" | jq -r ".\"$vm_id\"")
-        port=$((8080 + vm_id))
-        echo "${vm_id} ansible_host=${mycelium_ip} wireguard_ip=${wireguard_ip} vm_port=${port} vm_id=${vm_id}" >> "$INVENTORY_FILE"
-    done
+    # Use mycelium IPs for ansible_host with sequential ports
+    echo "$INTERNAL_WIREGUARD_IPS" | jq -r 'to_entries | sort_by(.key | tonumber) | to_entries[] | "\(.value.key) ansible_host=\(.value.value) wireguard_ip=\(.value.value) vm_port=\(8001 + .key) vm_id=\(.value.key)"' >> "$INVENTORY_FILE"
 else
     # Use wireguard IPs for ansible_host (default)
     echo "$INTERNAL_WIREGUARD_IPS" | jq -r 'to_entries | sort_by(.key | tonumber) | to_entries[] | "\(.value.key) ansible_host=\(.value.value) wireguard_ip=\(.value.value) vm_port=\(8001 + .key) vm_id=\(.value.key)"' >> "$INVENTORY_FILE"
