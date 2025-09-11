@@ -35,6 +35,12 @@
     mode: '0644'
   vars:
     gateway_type: "{{ gateway_type | default('gateway_nat') }}"
+    load_average: "{{ ansible_loadavg['1-min'] | default('N/A') }}"
+    public_ipv4: "{{ ansible_default_ipv4.address | default('N/A') }}"
+    hostname: "{{ ansible_hostname | default('gateway') }}"
+    uptime_seconds: "{{ ansible_uptime_seconds | int | default(0) }}"
+    memory_total_mb: "{{ ansible_memtotal_mb | int | default(0) }}"
+    architecture: "{{ ansible_architecture | default('x86_64') }}"
   become: true
   notify: reload nginx
 

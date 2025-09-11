@@ -19,16 +19,15 @@ server {
         default_type application/json;
         return 200 '{
             "gateway_type": "{{ gateway_type | default('gateway_nat') }}",
-            "public_ipv4": "{{ ansible_default_ipv4.address | default('N/A') }}",
+            "public_ipv4": "{{ public_ipv4 | default('N/A') }}",
             "network": "{{ network | default('test') }}",
-            "public_ipv4": "{{ ansible_default_ipv4.address | default('N/A') }}",
-            "hostname": "{{ ansible_hostname | default('gateway') }}",
+            "hostname": "{{ hostname | default('gateway') }}",
             "wireguard_ip": "{{ wireguard_ip | default('10.1.3.2') }}",
             "mycelium_ip": "{{ mycelium_ip | default('Not assigned') }}",
-            "uptime_seconds": {{ ansible_uptime_seconds | int | default(0) }},
-            "load_average": "{{ ansible_loadavg['1-min'] | default('N/A') }}",
-            "memory_total_mb": {{ ansible_memtotal_mb | int | default(0) }},
-            "architecture": "{{ ansible_architecture | default('x86_64') }}",
+            "uptime_seconds": {{ uptime_seconds | int | default(0) }},
+            "load_average": "{{ load_average | default('N/A') }}",
+            "memory_total_mb": {{ memory_total_mb | int | default(0) }},
+            "architecture": "{{ architecture | default('x86_64') }}",
             "features": ["NAT", "Firewall", "WireGuard", "Mycelium"],
             "status": "active"
         }';
