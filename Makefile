@@ -76,16 +76,7 @@ ping:
 # Clean up
 clean:
 	@echo "Cleaning up deployment..."
-	@cd infrastructure && tofu destroy -auto-approve 2>/dev/null || true
-	@echo "Removing Terraform state files and directories..."
-	@rm -f infrastructure/state.json \
-		infrastructure/terraform.tfstate \
-		infrastructure/terraform.tfstate.backup \
-		infrastructure/tfplan \
-		infrastructure/.terraform.lock.hcl \
-		ansible/inventory.ini
-	@rm -rf infrastructure/.terraform
-	@echo "Cleanup completed"
+	@./scripts/clean.sh
 
 # Generate Ansible inventory
 inventory:
