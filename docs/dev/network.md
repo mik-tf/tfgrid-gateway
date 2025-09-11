@@ -225,10 +225,42 @@ curl http://GATEWAY_IP:8081  # ✅ Uses optimal path
 
 ### ⚡ Advanced Features
 
-#### **Load Balancing**
-- Nginx reverse proxy distributes traffic across both networks
-- Health checks ensure only healthy backends receive traffic
-- Session persistence maintains user experience
+#### **Load Balancing & Intelligent Routing**
+
+##### **Round-Robin Distribution**
+When `NETWORK_MODE=both`, Nginx distributes requests using round-robin load balancing:
+
+```nginx
+upstream backend_http {
+    # VM7 backends
+    server 10.1.4.2:80;        # WireGuard backend
+    server [MYCELIUM_IP]:80;   # Mycelium backend
+
+    # VM8 backends
+    server 10.1.5.2:80;        # WireGuard backend
+    server [MYCELIUM_IP]:80;   # Mycelium backend
+}
+```
+
+**Request Distribution Pattern:**
+```
+Request 1 → 10.1.4.2:80 (WireGuard)
+Request 2 → [MYCELIUM_IP]:80 (Mycelium)
+Request 3 → 10.1.4.2:80 (WireGuard)
+Request 4 → [MYCELIUM_IP]:80 (Mycelium)
+```
+
+##### **Intelligent Routing Behavior**
+- **Performance-Based**: Nginx routes to the backend with lowest latency
+- **Health-Aware**: Automatically removes unhealthy backends from rotation
+- **Failover**: Seamless switching when one network fails
+- **Load Distribution**: Balances traffic across all healthy backends
+
+##### **Client Experience**
+- **Transparent**: Users see identical content regardless of network path
+- **Optimized**: Automatic selection of fastest available backend
+- **Reliable**: Continues working if one network experiences issues
+- **Consistent**: Same ports and URLs across all network paths
 
 #### **Geographic Optimization**
 - Different networks may have better performance in different regions

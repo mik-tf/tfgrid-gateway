@@ -322,8 +322,8 @@ export NETWORK_MODE=both
 make inventory && make demo
 
 # Your websites are now accessible via 4 different paths:
-# ✅ http://GATEWAY_IP:8081 (via WireGuard backend)
-# ✅ http://GATEWAY_IP:8081 (via Mycelium backend)
+# ✅ http://GATEWAY_IP:8081 (load balanced between WireGuard & Mycelium)
+# ✅ http://GATEWAY_IP:8081 (automatic failover if one network fails)
 # ✅ http://10.1.4.2:8081 (direct WireGuard access)
 # ✅ http://[MYCELIUM_IPv6]:8081 (direct Mycelium access)
 ```
@@ -333,6 +333,58 @@ make inventory && make demo
 - IPv4 connectivity fails
 - Network congestion affects one path
 - Geographic routing issues occur
+
+### **🔄 How Load Balancing Works**
+
+When you access `http://GATEWAY_IP:8081` with `NETWORK_MODE=both`, Nginx automatically **load balances** between WireGuard and Mycelium backends:
+
+#### **Round-Robin Distribution**
+```
+Request 1 → WireGuard backend (10.1.4.2:80)
+Request 2 → Mycelium backend ([IPv6]:80)
+Request 3 → WireGuard backend (10.1.4.2:80)
+Request 4 → Mycelium backend ([IPv6]:80)
+```
+
+#### **Automatic Optimization**
+- **Fastest Network Wins**: Nginx routes to the backend with lowest latency
+- **Health Checks**: Unhealthy backends are automatically removed from rotation
+- **Failover**: If one network fails, all traffic routes to the healthy network
+
+#### **How to Tell Which Network Served Your Request**
+
+**Method 1: VM Status Page**
+```bash
+curl http://GATEWAY_IP:8081
+# Shows: "Served via: WireGuard (10.1.4.2)"
+
+curl http://GATEWAY_IP:8081
+# Shows: "Served via: Mycelium ([IPv6_address])"
+```
+
+**Method 2: Network Analysis**
+```bash
+# Check response time differences
+curl -w "@curl-format.txt" http://GATEWAY_IP:8081
+# Faster response = more efficient network
+```
+
+**Method 3: Debug Headers** (can be added to VM status pages)
+```bash
+curl -I http://GATEWAY_IP:8081
+# Custom headers show which backend served the request
+```
+
+### **🚀 Summary: What Happens with `NETWORK_MODE=both`**
+
+1. **Your websites are accessible via the same URLs** - no client changes needed
+2. **Nginx automatically load balances** between WireGuard and Mycelium backends
+3. **Requests are distributed** using intelligent routing algorithms
+4. **Performance is optimized** - fastest network path is automatically chosen
+5. **Failover is automatic** - if one network fails, traffic routes to the healthy one
+6. **Content is identical** - same website regardless of which network serves it
+
+**Result**: **Enterprise-grade redundancy** with **zero configuration** required! 🌟
 
 #### **🔄 Automatic Failover**
 - If WireGuard fails, traffic automatically routes through Mycelium
