@@ -162,6 +162,48 @@ export NETWORK_MODE=both  # Options: wireguard-only, mycelium-only, both
 
 # Ansible connectivity preference (existing)
 export MAIN_NETWORK=wireguard  # Options: wireguard, mycelium
+
+# Security features
+export DISABLE_PORT_FORWARDING=false  # Options: true, false
+```
+
+### Security Features
+
+#### **Disable Port Forwarding (`DISABLE_PORT_FORWARDING`)**
+
+For enhanced security, you can disable public port forwarding while maintaining path-based access:
+
+**Security Matrix:**
+
+| Configuration | Public Port Access | Path Access | Private Access |
+|---------------|-------------------|-------------|----------------|
+| `DISABLE_PORT_FORWARDING=false` | ✅ Allowed | ✅ Allowed | ✅ Allowed |
+| `DISABLE_PORT_FORWARDING=true` | ❌ Blocked | ✅ Allowed | ✅ Allowed |
+
+**Use Cases:**
+- **Enterprise Security**: Hide port structure from external scanning
+- **Clean URLs**: Force path-based routing for all external access
+- **API Gateway Pattern**: Centralized access control through proxy
+- **Development**: Enforce consistent URL patterns
+
+**Requirements:**
+- Requires `GATEWAY_TYPE=gateway_proxy` for path-based access
+- Private network access (WireGuard/Mycelium) remains unaffected
+- DevOps can still access VMs directly via private networks
+
+**Example Configuration:**
+```bash
+# Secure configuration with path-only access
+export GATEWAY_TYPE=gateway_proxy
+export DISABLE_PORT_FORWARDING=true
+export NETWORK_MODE=both
+make inventory && make demo
+
+# Access patterns:
+curl http://GATEWAY_IP:8081     # ❌ Blocked (port forwarding disabled)
+curl http://GATEWAY_IP/vm7      # ✅ Works (path-based access)
+curl http://10.1.4.2:8081       # ✅ Works (private WireGuard)
+curl http://[MYCELIUM_IP]:8081  # ✅ Works (private Mycelium)
 ```
 
 ## Implementation Details

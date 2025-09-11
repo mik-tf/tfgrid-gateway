@@ -294,6 +294,47 @@ make inventory
 - **🔧 Easy Migration**: Switch between network configurations without redeployment
 - **📈 Production Ready**: Multiple network paths ensure high availability
 
+### Security Features
+
+#### **🔒 Disable Port Forwarding (`DISABLE_PORT_FORWARDING`)**
+
+For enhanced security, you can disable public port forwarding while keeping path-based access available:
+
+```bash
+# Enable path-only access (block direct ports)
+export DISABLE_PORT_FORWARDING=true
+export GATEWAY_TYPE=gateway_proxy  # Required for path-based access
+make inventory && make demo
+```
+
+**Security Matrix:**
+
+| Configuration | Public Port Access | Path Access | Private Access |
+|---------------|-------------------|-------------|----------------|
+| `DISABLE_PORT_FORWARDING=false` | ✅ Allowed | ✅ Allowed | ✅ Allowed |
+| `DISABLE_PORT_FORWARDING=true` | ❌ Blocked | ✅ Allowed | ✅ Allowed |
+
+**Use Cases:**
+- **Enterprise Security**: Hide port structure from external scanning
+- **Clean URLs**: Force path-based routing for all external access
+- **API Gateway Pattern**: Centralized access control through proxy
+- **Development**: Enforce consistent URL patterns
+
+**Example:**
+```bash
+# With DISABLE_PORT_FORWARDING=true
+curl http://GATEWAY_IP:8081     # ❌ Connection refused
+curl http://GATEWAY_IP/vm7      # ✅ Works (path-based)
+curl http://10.1.4.2:8081       # ✅ Works (private WireGuard)
+curl http://[MYCELIUM_IP]:8081  # ✅ Works (private Mycelium)
+```
+
+**Important Notes:**
+- Requires `GATEWAY_TYPE=gateway_proxy` for path-based access
+- Private network access (WireGuard/Mycelium) remains unaffected
+- DevOps can still access VMs directly via private networks
+- Public access is limited to clean, path-based URLs
+
 ## 🎯 Live Demo System
 
 The tfgrid-gateway project includes a comprehensive live demo system that makes it easy to see and test gateway functionality in real-time.

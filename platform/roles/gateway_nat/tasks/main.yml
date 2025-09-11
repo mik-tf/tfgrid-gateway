@@ -27,6 +27,7 @@
 
     - name: Add dynamic port forwarding rules
       shell: |
+        {% if disable_port_forwarding != 'true' %}
         {% if network_mode in ['wireguard-only', 'both'] %}
         {% for host in groups['internal'] %}
         {% set vm_id = hostvars[host]['vm_id'] | default(host) %}
@@ -46,6 +47,7 @@
         nft add rule inet gateway_nat prerouting iifname {{ external_interface }} tcp dport {{ port }} dnat ip to {{ mycelium_ip }}:{{ port }}
         {% endif %}
         {% endfor %}
+        {% endif %}
         {% endif %}
       become: true
       ignore_errors: yes
@@ -113,10 +115,12 @@
 
     - name: Allow DNAT forwarding for VM demo ports
       shell: |
+        {% if disable_port_forwarding != 'true' %}
         {% for host in groups['internal'] %}
         {% set port = hostvars[host]['vm_port'] | default(8080 + (host | int)) %}
         nft add rule inet firewall forward iifname {{ external_interface }} oifname {{ internal_interface }} tcp dport {{ port }} accept
         {% endfor %}
+        {% endif %}
       become: true
       ignore_errors: yes
 
