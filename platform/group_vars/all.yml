@@ -5,7 +5,6 @@ ansible_python_interpreter: /usr/bin/python3
 # Network configuration
 network_cidr: "10.1.0.0/16"
 wireguard_port: 51820
-network_mode: "{{ lookup('env', 'NETWORK_MODE') | default('wireguard-only', true) }}"
 
 # Mycelium configuration
 mycelium_enabled: true

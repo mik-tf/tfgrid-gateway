@@ -70,7 +70,7 @@ address:
 # Configure with Ansible
 ansible:
 	@echo "Configuring gateway with Ansible..."
-	@cd platform && ansible-playbook -i inventory.ini --extra-vars "gateway_type=${GATEWAY_TYPE:-gateway_nat} configure_internal_vms=false" site.yml
+	@cd platform && ansible-playbook -i inventory.ini --extra-vars "gateway_type=${GATEWAY_TYPE:-gateway_nat} network_mode=${NETWORK_MODE:-wireguard-only} configure_internal_vms=false" site.yml
 
 # Test with Ansible
 ansible-test:
@@ -89,7 +89,7 @@ connect:
 # Demo commands
 demo:
 	@echo "Deploying gateway with demo status page..."
-	@cd platform && ansible-playbook -i inventory.ini --extra-vars "gateway_type=${GATEWAY_TYPE:-gateway_nat} enable_demo=true configure_internal_vms=true enable_vm_demo=true" site.yml
+	@cd platform && ansible-playbook -i inventory.ini --extra-vars "gateway_type=${GATEWAY_TYPE:-gateway_nat} network_mode=${NETWORK_MODE:-wireguard-only} enable_demo=true configure_internal_vms=true enable_vm_demo=true" site.yml
 
 demo-status:
 	@./scripts/demo-status.sh
