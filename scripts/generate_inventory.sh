@@ -58,12 +58,7 @@ ansible_user=root
 ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 
 [gateway]
-gateway ansible_host=${GATEWAY_PUBLIC_IP}
-
-[gateway:vars]
-wireguard_ip=${GATEWAY_WIREGUARD_IP}
-mycelium_ip=${GATEWAY_MYCELIUM_IP}
-internal_ip=${GATEWAY_WIREGUARD_IP}
+gateway ansible_host=${GATEWAY_PUBLIC_IP} wireguard_ip=${GATEWAY_WIREGUARD_IP} mycelium_ip=${GATEWAY_MYCELIUM_IP} internal_ip=${GATEWAY_WIREGUARD_IP}
 
 [internal]
 EOF
