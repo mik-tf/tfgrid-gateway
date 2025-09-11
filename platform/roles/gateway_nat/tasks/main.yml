@@ -25,30 +25,27 @@
       become: true
       ignore_errors: yes
 
-    # Dynamic port forwarding based on network mode
-    {% if network_mode in ['wireguard-only', 'both'] %}
-    - name: Add port forwarding rules for VM 7 (port 8081) - WireGuard
-      shell: nft add rule inet gateway_nat prerouting iifname {{ external_interface }} tcp dport 8081 dnat ip to 10.1.4.2:8081
-      become: true
-      ignore_errors: yes
+    - name: Add dynamic port forwarding rules
+      shell: |
+        {% if network_mode in ['wireguard-only', 'both'] %}
+        {% for host in groups['internal'] %}
+        {% set vm_id = hostvars[host]['vm_id'] | default(host) %}
+        {% set wireguard_ip = hostvars[host]['wireguard_ip'] %}
+        {% set port = hostvars[host]['vm_port'] | default(8080 + (vm_id | int)) %}
+        nft add rule inet gateway_nat prerouting iifname {{ external_interface }} tcp dport {{ port }} dnat ip to {{ wireguard_ip }}:{{ port }}
+        {% endfor %}
+        {% endif %}
 
-    - name: Add port forwarding rules for VM 8 (port 8082) - WireGuard
-      shell: nft add rule inet gateway_nat prerouting iifname {{ external_interface }} tcp dport 8082 dnat ip to 10.1.5.2:8082
+        {% if network_mode in ['mycelium-only', 'both'] %}
+        {% for host in groups['internal'] %}
+        {% set vm_id = hostvars[host]['vm_id'] | default(host) %}
+        {% set mycelium_ip = hostvars[host]['mycelium_ip'] %}
+        {% set port = hostvars[host]['vm_port'] | default(8080 + (vm_id | int)) %}
+        nft add rule inet gateway_nat prerouting iifname {{ external_interface }} tcp dport {{ port }} dnat ip to {{ mycelium_ip }}:{{ port }}
+        {% endfor %}
+        {% endif %}
       become: true
       ignore_errors: yes
-    {% endif %}
-
-    {% if network_mode in ['mycelium-only', 'both'] %}
-    {% for host in groups['internal'] %}
-    {% set vm_id = hostvars[host]['vm_id'] | default(host) %}
-    {% set mycelium_ip = hostvars[host]['mycelium_ip'] %}
-    {% set port = hostvars[host]['vm_port'] | default(8080 + (vm_id | int)) %}
-    - name: Add port forwarding rules for {{ host }} (port {{ port }}) - Mycelium
-      shell: nft add rule inet gateway_nat prerouting iifname {{ external_interface }} tcp dport {{ port }} dnat ip to {{ mycelium_ip }}:{{ port }}
-      become: true
-      ignore_errors: yes
-    {% endfor %}
-    {% endif %}
 
   become: true
 
