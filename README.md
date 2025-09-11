@@ -83,13 +83,10 @@ make wireguard
 # 4. Configure gateway with Ansible
 make ansible
 
-# 5. Deploy gateway demo
+# 5. Deploy gateway demo (includes VM websites)
 make demo
 
-# 6. Deploy VM demo websites with port forwarding
-make vm-demo
-
-# 7. Test everything
+# 6. Test everything
 make demo-test
 curl http://YOUR_GATEWAY_IP:8081  # VM7 website
 curl http://YOUR_GATEWAY_IP:8082  # VM8 website
@@ -139,8 +136,7 @@ make infrastructure  # Deploy VMs and network
 make inventory      # Generate Ansible inventory
 make wireguard      # Set up local WireGuard (required for Ansible)
 make ansible        # Configure gateway with Ansible
-make demo          # Deploy demo with status page
-make vm-demo       # Deploy VM websites with port forwarding
+make demo          # Deploy demo with status page and VM websites
 make demo-status   # Check demo URLs and connectivity
 ```
 
@@ -186,7 +182,7 @@ Gateway VM (185.206.122.150)
 
 ```bash
 # Complete multi-VM demo deployment
-make full-demo
+make quick-demo
 
 # This runs:
 # 1. Infrastructure deployment (gateway + internal VMs)
@@ -217,14 +213,11 @@ curl http://YOUR_GATEWAY_IP:8082
 ### Advanced Demo Commands
 
 ```bash
-# Deploy only VM-specific websites (requires prior setup)
-make vm-demo
-
 # Deploy complete system with port forwarding
-make full-demo
+make quick-demo
 
 # Step-by-step deployment (recommended)
-make infrastructure inventory wireguard ansible demo vm-demo
+make infrastructure inventory wireguard ansible demo
 
 # Check all demo URLs and ports
 make demo-status
@@ -295,9 +288,9 @@ Runs `scripts/infrastructure.sh`, which:
 - Generates the Ansible inventory based on deployed nodes
 - Tests connectivity to all VMs
 
-### 2. Gateway Configuration (`make configure`)
+### 2. Gateway Configuration (`make ansible`)
 
-Runs `scripts/configure.sh`, which:
+Runs Ansible playbook, which:
 - Configures NAT rules on gateway VMs
 - Sets up proxy services (optional)
 - Configures firewall rules
@@ -485,7 +478,7 @@ To add or remove internal VMs:
 
 1. Update your `credentials.auto.tfvars` file
 2. Run `make infrastructure` again to update the infrastructure
-3. Run `make configure` to reconfigure the gateway
+3. Run `make ansible` to reconfigure the gateway
 
 ## Troubleshooting
 
