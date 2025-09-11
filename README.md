@@ -42,9 +42,9 @@ The gateway VMs live within the same network as your internal VMs, providing sec
 
 ```bash
 # Install Ansible collections and roles
-cd ansible
-ansible-galaxy collection install -r requirements.yml
-ansible-galaxy role install -r requirements.yml
+cd platform
+ansible-galaxy collection install -r platform/requirements.yml
+ansible-galaxy role install -r platform/requirements.yml
 ```
 
 ## 🚀 Quick Start (5 minutes)

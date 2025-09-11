@@ -5,7 +5,7 @@ This directory contains Ansible playbooks and roles for configuring ThreeFold Gr
 ## Directory Structure
 
 ```
-ansible/
+platform/
 ├── site.yml              # Main playbook
 ├── test-gateway.yml      # Testing playbook
 ├── requirements.yml      # Ansible dependencies
@@ -124,10 +124,10 @@ ansible-playbook -i inventory.ini site.yml --limit internal
 
 To create a custom gateway type:
 
-1. Create a new role: `ansible/roles/gateway_custom/`
-2. Add tasks in: `ansible/roles/gateway_custom/tasks/main.yml`
-3. Add handlers in: `ansible/roles/gateway_custom/handlers/main.yml`
-4. Add templates in: `ansible/roles/gateway_custom/templates/`
+1. Create a new role: `platform/roles/gateway_custom/`
+2. Add tasks in: `platform/roles/gateway_custom/tasks/main.yml`
+3. Add handlers in: `platform/roles/gateway_custom/handlers/main.yml`
+4. Add templates in: `platform/roles/gateway_custom/templates/`
 5. Update `site.yml` to include the new role
 6. Set `GATEWAY_TYPE=gateway_custom`
 

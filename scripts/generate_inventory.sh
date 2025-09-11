@@ -11,7 +11,7 @@ NC='\033[0m' # No Color
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 PROJECT_DIR="$SCRIPT_DIR/.."
 INFRASTRUCTURE_DIR="$PROJECT_DIR/infrastructure"
-ANSIBLE_DIR="$PROJECT_DIR/ansible"
+PLATFORM_DIR="$PROJECT_DIR/platform"
 
 echo -e "${GREEN}Generating Ansible inventory from Terraform outputs${NC}"
 
@@ -34,7 +34,7 @@ INTERNAL_WIREGUARD_IPS=$(tofu output -json internal_wireguard_ips 2>/dev/null ||
 INTERNAL_MYCELIUM_IPS=$(tofu output -json internal_mycelium_ips 2>/dev/null || echo "{}")
 
 # Generate inventory file
-INVENTORY_FILE="$ANSIBLE_DIR/inventory.ini"
+INVENTORY_FILE="$PLATFORM_DIR/inventory.ini"
 
 cat > "$INVENTORY_FILE" << EOF
 [all:vars]
@@ -64,10 +64,10 @@ EOF
 echo "$INTERNAL_MYCELIUM_IPS" | jq -r 'to_entries[] | "internal_\(.key)_mycelium_ip=\(.value)"' >> "$INVENTORY_FILE"
 
 # Create group variables
-mkdir -p "$ANSIBLE_DIR/group_vars"
+mkdir -p "$PLATFORM_DIR/group_vars"
 
 # Gateway group variables
-cat > "$ANSIBLE_DIR/group_vars/gateway.yml" << EOF
+cat > "$PLATFORM_DIR/group_vars/gateway.yml" << EOF
 ---
 # Gateway configuration
 gateway_type: "{{ lookup('env', 'GATEWAY_TYPE') | default('gateway_nat', true) }}"
@@ -87,7 +87,7 @@ enable_testing: false
 EOF
 
 # Internal group variables
-cat > "$ANSIBLE_DIR/group_vars/internal.yml" << EOF
+cat > "$PLATFORM_DIR/group_vars/internal.yml" << EOF
 ---
 # Internal VM configuration
 services:
@@ -100,7 +100,7 @@ services:
 EOF
 
 # All group variables
-cat > "$ANSIBLE_DIR/group_vars/all.yml" << EOF
+cat > "$PLATFORM_DIR/group_vars/all.yml" << EOF
 ---
 # Global configuration
 ansible_python_interpreter: /usr/bin/python3
@@ -122,4 +122,4 @@ echo "  - gateway_proxy: Proxy-based gateway with HAProxy/Nginx"
 echo ""
 echo -e "${YELLOW}To use a specific gateway type:${NC}"
 echo "  export GATEWAY_TYPE=gateway_proxy"
-echo "  ansible-playbook -i ansible/inventory.ini ansible/site.yml"
+echo "  ansible-playbook -i platform/inventory.ini platform/site.yml"

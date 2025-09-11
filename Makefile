@@ -61,12 +61,12 @@ address:
 # Configure with Ansible
 ansible:
 	@echo "Configuring gateway with Ansible..."
-	@cd ansible && ansible-playbook -i inventory.ini --extra-vars "gateway_type=${GATEWAY_TYPE:-gateway_nat} configure_internal_vms=false" site.yml
+	@cd platform && ansible-playbook -i inventory.ini --extra-vars "gateway_type=${GATEWAY_TYPE:-gateway_nat} configure_internal_vms=false" site.yml
 
 # Test with Ansible
 ansible-test:
 	@echo "Testing gateway configuration with Ansible..."
-	@cd ansible && ansible-playbook -i inventory.ini test-gateway.yml
+	@cd platform && ansible-playbook -i inventory.ini test-gateway.yml
 
 # Clean up
 clean:
@@ -80,7 +80,7 @@ connect:
 # Demo commands
 demo:
 	@echo "Deploying gateway with demo status page..."
-	@cd ansible && ansible-playbook -i inventory.ini --extra-vars "gateway_type=${GATEWAY_TYPE:-gateway_nat} enable_demo=true configure_internal_vms=true enable_vm_demo=true" site.yml
+	@cd platform && ansible-playbook -i inventory.ini --extra-vars "gateway_type=${GATEWAY_TYPE:-gateway_nat} enable_demo=true configure_internal_vms=true enable_vm_demo=true" site.yml
 
 demo-status:
 	@./scripts/demo-status.sh

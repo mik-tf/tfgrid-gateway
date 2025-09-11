@@ -11,7 +11,7 @@ NC='\033[0m' # No Color
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 PROJECT_DIR="$SCRIPT_DIR/.."
 INFRASTRUCTURE_DIR="$PROJECT_DIR/infrastructure"
-ANSIBLE_DIR="$PROJECT_DIR/ansible"
+PLATFORM_DIR="$PROJECT_DIR/platform"
 
 echo -e "${GREEN}Cleaning up ThreeFold Grid Gateway deployment${NC}"
 echo "=============================================="
@@ -39,7 +39,7 @@ FILES_TO_REMOVE=(
     "$INFRASTRUCTURE_DIR/terraform.tfstate.backup"
     "$INFRASTRUCTURE_DIR/tfplan"
     "$INFRASTRUCTURE_DIR/.terraform.lock.hcl"
-    "$ANSIBLE_DIR/inventory.ini"
+    "$PLATFORM_DIR/inventory.ini"
 )
 
 for file in "${FILES_TO_REMOVE[@]}"; do

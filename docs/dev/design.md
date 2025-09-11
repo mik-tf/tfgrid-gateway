@@ -131,7 +131,7 @@ Internal VMs (IPv6-only)
 
 #### Modular Role System
 ```
-ansible/roles/
+platform/roles/
 ├── gateway_nat/          # Traditional NAT with nftables
 ├── gateway_proxy/        # HAProxy/Nginx reverse proxy
 ├── gateway_vpn/          # WireGuard/OpenVPN setup

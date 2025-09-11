@@ -19,8 +19,8 @@ git clone https://github.com/mik-tf/tfgrid-gateway
 cd tfgrid-gateway
 
 # Install Ansible dependencies
-ansible-galaxy collection install -r ansible/requirements.yml
-ansible-galaxy role install -r ansible/requirements.yml
+ansible-galaxy collection install -r platform/requirements.yml
+ansible-galaxy role install -r platform/requirements.yml
 ```
 
 ### Step 2: Configure Your Deployment
@@ -243,7 +243,7 @@ unset TF_VAR_mnemonic
 
 - Read [docs/deployment.md](deployment.md) for architecture details
 - Check [docs/README.md](../README.md) for advanced configuration
-- Visit [ansible/README.md](ansible/README.md) for Ansible customization
+- Visit [platform/README.md](platform/README.md) for Ansible customization
 
 ## ❓ Troubleshooting
 

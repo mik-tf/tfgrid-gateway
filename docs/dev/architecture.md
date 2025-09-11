@@ -22,7 +22,7 @@ The ThreeFold Grid Gateway provides IPv4 connectivity for IPv6-only VMs on the T
 
 ### 2. Configuration Layer (Ansible)
 
-**Location**: `ansible/`
+**Location**: `platform/`
 
 **Purpose**: Configures networking, firewall, and services on deployed VMs
 
@@ -62,7 +62,7 @@ Internet → Gateway VM (Public IPv4) → Internal VMs (via WireGuard/Mycelium)
 # TODO: Implement drop policy with proper testing in the future
 ```
 
-**Location**: [`ansible/roles/gateway_nat/tasks/main.yml`](../ansible/roles/gateway_nat/tasks/main.yml:93-95)
+**Location**: [`platform/roles/gateway_nat/tasks/main.yml`](../platform/roles/gateway_nat/tasks/main.yml:93-95)
 
 **Key Lesson**: Never delete firewall chains that contain active allow rules. Always preserve SSH access during automated deployments.
 
@@ -128,7 +128,7 @@ http://185.206.122.150/vm11/ → 10.1.6.2:8083
 
 ### Implementation
 
-**Nginx Configuration** ([`nginx.conf.j2`](../ansible/roles/gateway_demo/templates/nginx.conf.j2)):
+**Nginx Configuration** ([`nginx.conf.j2`](../platform/roles/gateway_demo/templates/nginx.conf.j2)):
 ```nginx
 # VM proxy endpoints (dynamically generated)
 {% for host in groups['internal'] %}
@@ -142,7 +142,7 @@ location /vm{{ host }}/ {
 {% endfor %}
 ```
 
-**Dynamic Status Page** ([`status.html.j2`](../ansible/roles/gateway_demo/templates/status.html.j2)):
+**Dynamic Status Page** ([`status.html.j2`](../platform/roles/gateway_demo/templates/status.html.j2)):
 ```html
 <!-- Dynamically generated VM links -->
 {% for host in groups['internal'] %}
@@ -257,10 +257,10 @@ curl http://185.206.122.150/vm11/ # Test VM 11
 
 | File | Purpose | Key Features |
 |------|---------|--------------|
-| [`ansible/roles/gateway_nat/tasks/main.yml`](../ansible/roles/gateway_nat/tasks/main.yml) | Firewall & NAT configuration | Safe firewall rules, interface detection |
-| [`ansible/roles/gateway_demo/templates/nginx.conf.j2`](../ansible/roles/gateway_demo/templates/nginx.conf.j2) | Reverse proxy configuration | Dynamic proxy generation |
-| [`ansible/roles/gateway_demo/templates/status.html.j2`](../ansible/roles/gateway_demo/templates/status.html.j2) | Gateway status page | Dynamic VM links |
-| [`ansible/inventory.ini`](../ansible/inventory.ini) | VM configuration | IP addresses, ports, VM IDs |
+| [`platform/roles/gateway_nat/tasks/main.yml`](../platform/roles/gateway_nat/tasks/main.yml) | Firewall & NAT configuration | Safe firewall rules, interface detection |
+| [`platform/roles/gateway_demo/templates/nginx.conf.j2`](../platform/roles/gateway_demo/templates/nginx.conf.j2) | Reverse proxy configuration | Dynamic proxy generation |
+| [`platform/roles/gateway_demo/templates/status.html.j2`](../platform/roles/gateway_demo/templates/status.html.j2) | Gateway status page | Dynamic VM links |
+| [`platform/inventory.ini`](../platform/inventory.ini) | VM configuration | IP addresses, ports, VM IDs |
 | [`Makefile`](../Makefile) | Deployment orchestration | Complete workflow automation |
 
 ## Scalability Considerations
