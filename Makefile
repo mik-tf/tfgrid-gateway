@@ -82,7 +82,8 @@ clean:
 		infrastructure/terraform.tfstate \
 		infrastructure/terraform.tfstate.backup \
 		infrastructure/tfplan \
-		infrastructure/.terraform.lock.hcl
+		infrastructure/.terraform.lock.hcl \
+		ansible/inventory.ini
 	@rm -rf infrastructure/.terraform
 	@echo "Cleanup completed"
 
