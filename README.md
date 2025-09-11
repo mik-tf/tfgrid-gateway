@@ -147,6 +147,35 @@ make inventory
 - **WireGuard**: More reliable for complex network setups, better performance for large deployments
 - **Mycelium**: Useful when WireGuard has connectivity issues, provides IPv6-native connectivity
 
+### Network Modes
+
+Choose your website hosting configuration by setting the `NETWORK_MODE` environment variable:
+
+```bash
+# Websites hosted on WireGuard only (default)
+export NETWORK_MODE=wireguard-only
+make inventory
+
+# Websites hosted on Mycelium only
+export NETWORK_MODE=mycelium-only
+make inventory
+
+# Websites hosted on both networks (redundancy)
+export NETWORK_MODE=both
+make inventory
+```
+
+**Available Network Modes:**
+- `wireguard-only`: Internal VMs bind to WireGuard IPs only (default, maintains current behavior)
+- `mycelium-only`: Internal VMs bind to Mycelium IPv6 addresses only
+- `both`: Internal VMs bind to both networks on the same ports (network redundancy)
+
+**Network Mode Benefits:**
+- **Redundancy**: `both` mode provides automatic failover if one network fails
+- **Flexibility**: Choose the network that works best for your environment
+- **Performance**: Use the most efficient network for your use case
+- **Compatibility**: Support different client network capabilities
+
 ## 🎯 Live Demo System
 
 The tfgrid-gateway project includes a comprehensive live demo system that makes it easy to see and test gateway functionality in real-time.

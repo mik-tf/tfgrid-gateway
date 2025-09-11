@@ -45,6 +45,11 @@ help:
 	@echo "  export MAIN_NETWORK=wireguard       - Use WireGuard for Ansible connectivity (default)"
 	@echo "  export MAIN_NETWORK=mycelium        - Use Mycelium IPv6 for Ansible connectivity"
 	@echo ""
+	@echo "Network modes (set NETWORK_MODE environment variable):"
+	@echo "  export NETWORK_MODE=wireguard-only  - Websites hosted on WireGuard only (default)"
+	@echo "  export NETWORK_MODE=mycelium-only   - Websites hosted on Mycelium only"
+	@echo "  export NETWORK_MODE=both            - Websites hosted on both networks (redundancy)"
+	@echo ""
 	@echo "Demo Features:"
 	@echo "  - Live status page at http://GATEWAY_IP"
 	@echo "  - JSON API at http://GATEWAY_IP/api/status"
@@ -101,7 +106,7 @@ infrastructure:
 # Generate Ansible inventory
 inventory:
 	@echo "Generating Ansible inventory..."
-	@./scripts/generate_inventory.sh
+	@MAIN_NETWORK=${MAIN_NETWORK:-wireguard} NETWORK_MODE=${NETWORK_MODE:-wireguard-only} ./scripts/generate_inventory.sh
 
 # Test connectivity
 ping:

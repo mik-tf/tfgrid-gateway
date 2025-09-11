@@ -1,6 +1,16 @@
 server {
-    listen {{ vm_port | default('80') }} default_server;
-    listen [::]:{{ vm_port | default('80') }} default_server;
+    # WireGuard binding (always included for backward compatibility)
+    listen {{ wireguard_ip }}:{{ vm_port | default('80') }};
+
+    {% if network_mode in ['mycelium-only', 'both'] %}
+    # Mycelium binding
+    listen [{{ mycelium_ip }}]:{{ vm_port | default('80') }};
+    {% endif %}
+
+    {% if network_mode == 'both' %}
+    # IPv6 dual-stack support
+    listen [::]:{{ vm_port | default('80') }};
+    {% endif %}
 
     root /var/www/vm-demo;
     index index.html;

@@ -1,6 +1,12 @@
 upstream backend_http {
 {% for host in groups['internal'] %}
-    server {{ hostvars[host]['internal_ip'] | default(host) }}:80;
+    # WireGuard backend (always included)
+    server {{ hostvars[host]['wireguard_ip'] }}:80;
+
+    {% if network_mode in ['mycelium-only', 'both'] %}
+    # Mycelium backend
+    server [{{ hostvars[host]['mycelium_ip'] }}]:80;
+    {% endif %}
 {% endfor %}
 }
 

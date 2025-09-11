@@ -13,11 +13,13 @@ PROJECT_DIR="$SCRIPT_DIR/.."
 INFRASTRUCTURE_DIR="$PROJECT_DIR/infrastructure"
 PLATFORM_DIR="$PROJECT_DIR/platform"
 
-# Set MAIN_NETWORK variable (default: wireguard)
+# Set network variables
 MAIN_NETWORK="${MAIN_NETWORK:-wireguard}"
+NETWORK_MODE="${NETWORK_MODE:-wireguard-only}"
 
 echo -e "${GREEN}Generating Ansible inventory from Terraform outputs${NC}"
 echo -e "${YELLOW}Using MAIN_NETWORK: ${MAIN_NETWORK}${NC}"
+echo -e "${YELLOW}Using NETWORK_MODE: ${NETWORK_MODE}${NC}"
 
 # Check if Terraform state exists
 if [[ ! -f "$INFRASTRUCTURE_DIR/terraform.tfstate" ]]; then
@@ -63,7 +65,7 @@ if [[ "$MAIN_NETWORK" == "mycelium" ]]; then
     while read -r vm_id; do
         wireguard_ip=$(echo "$INTERNAL_WIREGUARD_IPS" | jq -r ".\"$vm_id\"")
         mycelium_ip=$(echo "$INTERNAL_MYCELIUM_IPS" | jq -r ".\"$vm_id\"")
-        port=$((808 + vm_id))
+        port=$((8080 + vm_id))
         echo "${vm_id} ansible_host=${mycelium_ip} wireguard_ip=${wireguard_ip} vm_port=${port} vm_id=${vm_id}" >> "$INVENTORY_FILE"
     done
 else
@@ -87,6 +89,9 @@ cat > "$PLATFORM_DIR/group_vars/gateway.yml" << EOF
 ---
 # Gateway configuration
 gateway_type: "{{ lookup('env', 'GATEWAY_TYPE') | default('gateway_nat', true) }}"
+
+# Network configuration
+network_mode: "$NETWORK_MODE"
 
 # Port forwarding (for NAT gateway)
 port_forwards: []
@@ -131,20 +136,27 @@ EOF
 
 echo -e "${GREEN}Inventory generated successfully!${NC}"
 echo "Inventory file: $INVENTORY_FILE"
-echo "Main network: $MAIN_NETWORK"
+echo "Main network (Ansible): $MAIN_NETWORK"
+echo "Network mode (Website): $NETWORK_MODE"
 echo ""
 echo -e "${YELLOW}Available gateway types:${NC}"
 echo "  - gateway_nat: NAT-based gateway with nftables"
 echo "  - gateway_proxy: Proxy-based gateway with HAProxy/Nginx"
 echo ""
-echo -e "${YELLOW}Available network types:${NC}"
+echo -e "${YELLOW}Available network types (Ansible connectivity):${NC}"
 echo "  - wireguard: Use WireGuard VPN for Ansible connectivity (default)"
 echo "  - mycelium: Use Mycelium IPv6 overlay for Ansible connectivity"
+echo ""
+echo -e "${YELLOW}Available network modes (Website hosting):${NC}"
+echo "  - wireguard-only: Websites on WireGuard only (default)"
+echo "  - mycelium-only: Websites on Mycelium only"
+echo "  - both: Websites on both networks (redundancy)"
 echo ""
 echo -e "${YELLOW}To use a specific gateway type:${NC}"
 echo "  export GATEWAY_TYPE=gateway_proxy"
 echo "  ansible-playbook -i platform/inventory.ini platform/site.yml"
 echo ""
-echo -e "${YELLOW}To use a specific network type:${NC}"
+echo -e "${YELLOW}To configure network settings:${NC}"
 echo "  export MAIN_NETWORK=mycelium"
+echo "  export NETWORK_MODE=both"
 echo "  make inventory"
