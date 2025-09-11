@@ -69,21 +69,22 @@ internal_ip=${GATEWAY_WIREGUARD_IP}
 EOF
 
 # Add internal VMs with port assignments
-if [[ "$MAIN_NETWORK" == "mycelium" ]]; then
-    # Use mycelium IPs for ansible_host with sequential ports
-    echo "$INTERNAL_WIREGUARD_IPS" | jq -r 'to_entries | sort_by(.key | tonumber) | to_entries[] | "\(.value.key) ansible_host=\(.value.value) wireguard_ip=\(.value.value) vm_port=\(8001 + .key) vm_id=\(.value.key)"' >> "$INVENTORY_FILE"
-else
-    # Use wireguard IPs for ansible_host (default)
-    echo "$INTERNAL_WIREGUARD_IPS" | jq -r 'to_entries | sort_by(.key | tonumber) | to_entries[] | "\(.value.key) ansible_host=\(.value.value) wireguard_ip=\(.value.value) vm_port=\(8001 + .key) vm_id=\(.value.key)"' >> "$INVENTORY_FILE"
-fi
+echo "$INTERNAL_WIREGUARD_IPS" | jq -r 'to_entries | sort_by(.key | tonumber) | to_entries[] | "\(.value.key) wireguard_ip=\(.value.value) vm_port=\(8001 + .key) vm_id=\(.value.key)"' | \
+while IFS= read -r line; do
+    vm_id=$(echo "$line" | awk '{print $1}')
+    wireguard_ip=$(echo "$line" | awk -F'=' '{print $2}' | awk '{print $1}')
+    mycelium_ip=$(echo "$INTERNAL_MYCELIUM_IPS" | jq -r ".\"$vm_id\"")
 
-# Add internal variables
-cat >> "$INVENTORY_FILE" << EOF
+    if [[ "$MAIN_NETWORK" == "mycelium" ]]; then
+        # Use mycelium IP for ansible_host
+        echo "$vm_id ansible_host=$mycelium_ip wireguard_ip=$wireguard_ip mycelium_ip=$mycelium_ip vm_port=$(echo "$line" | awk -F'vm_port=' '{print $2}' | awk '{print $1}') vm_id=$vm_id" >> "$INVENTORY_FILE"
+    else
+        # Use wireguard IP for ansible_host (default)
+        echo "$vm_id ansible_host=$wireguard_ip wireguard_ip=$wireguard_ip mycelium_ip=$mycelium_ip vm_port=$(echo "$line" | awk -F'vm_port=' '{print $2}' | awk '{print $1}') vm_id=$vm_id" >> "$INVENTORY_FILE"
+    fi
+done
 
-[internal:vars]
-EOF
-
-echo "$INTERNAL_MYCELIUM_IPS" | jq -r 'to_entries[] | "internal_\(.key)_mycelium_ip=\(.value)"' >> "$INVENTORY_FILE"
+# Internal variables section removed - mycelium IPs are now included in each host line
 
 # Create group variables
 mkdir -p "$PLATFORM_DIR/group_vars"

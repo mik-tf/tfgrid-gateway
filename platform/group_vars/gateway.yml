@@ -1,8 +1,6 @@
 ---
 # Gateway configuration
 gateway_type: "{{ lookup('env', 'GATEWAY_TYPE') | default('gateway_nat', true) }}"
-# Debug: Show what we get from env
-gateway_type_debug: "{{ lookup('env', 'GATEWAY_TYPE') }}"
 
 # Network configuration
 network_mode: "mycelium-only"
