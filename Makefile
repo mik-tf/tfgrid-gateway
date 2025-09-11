@@ -1,7 +1,7 @@
-.PHONY: help infrastructure configure connect ping clean ansible ansible-test inventory ready demo demo-status demo-test full-demo quick-demo
+.PHONY: help infrastructure configure connect ping clean ansible ansible-test inventory demo demo-status demo-test full-demo quick-demo
 
 # Default target
-all: infrastructure inventory wireguard demo
+all: infrastructure wireguard inventory demo
 
 # Help target
 help:
@@ -27,7 +27,8 @@ help:
 	@echo "  make quick-demo      - Complete deployment with demo (infra + config + demo)"
 	@echo ""
 	@echo "Quick deployment:"
-	@echo "  make                 - Deploy everything (infrastructure inventory wireguard ready demo)"
+	@echo "  make                 - Deploy everything (infrastructure wireguard inventory demo)"
+	@echo "  make quick           - Deploy everything but infrastructure (wireguard inventory demo)"
 	@echo "  make quick-demo      - Deploy with live demo status page"
 	@echo ""
 	@echo "Gateway types (set GATEWAY_TYPE environment variable):"
@@ -46,6 +47,9 @@ help:
 	@echo "  - ThreeFold account with TFT balance"
 	@echo "  - Configure infrastructure/credentials.auto.tfvars"
 	@echo "  - Set TF_VAR_mnemonic environment variable"
+
+# As default without infrastructure deployment
+quick: wireguard inventory demo
 
 # Infrastructure deployment
 infrastructure:
