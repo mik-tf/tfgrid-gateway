@@ -308,10 +308,10 @@
                 <h3>🌐 Network Configuration</h3>
                 <div class="info-grid">
                     <div class="label">Gateway Type:</div>
-                    <div class="value">{{ gateway_type | default('gateway_nat') | title }}</div>
+                    <div class="value">{{ gateway_type | title }}</div>
 
                     <div class="label">Network:</div>
-                    <div class="value">{{ network | default('test') }}</div>
+                    <div class="value">{{ network }}</div>
 
                     <div class="label">Public IPv4:</div>
                     <div class="value">{{ ansible_default_ipv4.address | default('N/A') }}</div>
@@ -358,7 +358,7 @@
                     <div class="label">Mycelium IPs:</div>
                     <div class="value ipv6">
 {% for host in groups['internal'] %}
-                        VM {{ host }}: {{ hostvars[host]['mycelium_ip'] | default('N/A') }}{% if not loop.last %}<br>{% endif %}
+                        VM {{ host }}: {{ hostvars[host]['mycelium_ip'] | default('Not configured yet') }}{% if not loop.last %}<br>{% endif %}
 {% endfor %}
                     </div>
                 </div>

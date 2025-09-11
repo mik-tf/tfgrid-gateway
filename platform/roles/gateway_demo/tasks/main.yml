@@ -24,6 +24,9 @@
     mode: '0644'
   vars:
     gateway_type: "{{ gateway_type | default('gateway_nat') }}"
+    network: "{{ network | default('test') }}"
+    wireguard_ip: "{{ wireguard_ip | default('10.1.3.2') }}"
+    mycelium_ip: "{{ mycelium_ip | default('N/A') }}"
   become: true
 
 - name: Debug variables before template
