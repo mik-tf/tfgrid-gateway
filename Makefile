@@ -1,4 +1,4 @@
-.PHONY: help infrastructure configure connect ping clean ansible ansible-test inventory demo demo-status demo-test quick-demo
+.PHONY: help address ansible ansible-test clean connect demo demo-status demo-test infrastructure inventory ping quick quick-demo verify wireguard
 
 # Default target
 all: infrastructure wireguard inventory demo
@@ -9,15 +9,22 @@ help:
 	@echo "================================"
 	@echo ""
 	@echo "Available targets:"
-	@echo "  make infrastructure  - Deploy VMs and network infrastructure"
-	@echo "  make inventory       - Generate Ansible inventory from Terraform outputs"
+	@echo "  make address         - Show all VM addresses (WireGuard + Mycelium)"
 	@echo "  make ansible         - Configure gateway using Ansible"
 	@echo "  make ansible-test    - Run gateway tests using Ansible"
-	@echo "  make connect         - Connect to gateway VM via SSH"
-	@echo "  make ping            - Test connectivity to all VMs"
-	@echo "  make address         - Show all VM addresses (WireGuard + Mycelium)"
 	@echo "  make clean           - Clean up deployment and remove resources"
+	@echo "  make connect         - Connect to gateway VM via SSH"
+	@echo "  make demo            - Deploy gateway with live demo status page and VM websites"
+	@echo "  make demo-status     - Check demo status and connectivity"
+	@echo "  make demo-test       - Run comprehensive gateway tests"
 	@echo "  make help            - Show this help message"
+	@echo "  make infrastructure  - Deploy VMs and network infrastructure"
+	@echo "  make inventory       - Generate Ansible inventory from Terraform outputs"
+	@echo "  make ping            - Test connectivity to all VMs"
+	@echo "  make quick           - Deploy everything but infrastructure (wireguard inventory demo)"
+	@echo "  make quick-demo      - Complete deployment with demo (infra + config + demo)"
+	@echo "  make verify          - Verify deployment"
+	@echo "  make wireguard       - Set up WireGuard"
 	@echo ""
 	@echo "Demo and Testing:"
 	@echo "  make demo            - Deploy gateway with live demo status page and VM websites"
@@ -47,32 +54,9 @@ help:
 	@echo "  - Configure infrastructure/credentials.auto.tfvars"
 	@echo "  - Set TF_VAR_mnemonic environment variable"
 
-# As default without infrastructure deployment
-quick: wireguard inventory demo
-
-# Infrastructure deployment
-infrastructure:
-	@echo "Deploying ThreeFold Grid infrastructure..."
-	@./scripts/infrastructure.sh
-
-# Connect to gateway
-connect:
-	@./scripts/connect.sh
-
-# Test connectivity
-ping:
-	@echo "Testing connectivity to VMs..."
-	@./scripts/ping.sh
-
-# Clean up
-clean:
-	@echo "Cleaning up deployment..."
-	@./scripts/clean.sh
-
-# Generate Ansible inventory
-inventory:
-	@echo "Generating Ansible inventory..."
-	@./scripts/generate_inventory.sh
+# Show all VM addresses
+address:
+	@./scripts/address.sh
 
 # Configure with Ansible
 ansible:
@@ -84,19 +68,14 @@ ansible-test:
 	@echo "Testing gateway configuration with Ansible..."
 	@cd ansible && ansible-playbook -i inventory.ini test-gateway.yml
 
-# WireGuard setup
-wireguard:
-	@echo "Setting up WireGuard..."
-	@./scripts/wg.sh
+# Clean up
+clean:
+	@echo "Cleaning up deployment..."
+	@./scripts/clean.sh
 
-# Show all VM addresses
-address:
-	@./scripts/address.sh
-
-# Verify deployment
-verify:
-	@echo "Verifying deployment..."
-	@./scripts/verify.sh
+# Connect to gateway
+connect:
+	@./scripts/connect.sh
 
 # Demo commands
 demo:
@@ -110,5 +89,33 @@ demo-test:
 	@echo "Running comprehensive gateway tests..."
 	@./scripts/test-gateway.sh
 
+# Infrastructure deployment
+infrastructure:
+	@echo "Deploying ThreeFold Grid infrastructure..."
+	@./scripts/infrastructure.sh
+
+# Generate Ansible inventory
+inventory:
+	@echo "Generating Ansible inventory..."
+	@./scripts/generate_inventory.sh
+
+# Test connectivity
+ping:
+	@echo "Testing connectivity to VMs..."
+	@./scripts/ping.sh
+
+# As default without infrastructure deployment
+quick: wireguard inventory demo
+
 # Quick deployment with demo
 quick-demo: infrastructure inventory demo demo-status
+
+# Verify deployment
+verify:
+	@echo "Verifying deployment..."
+	@./scripts/verify.sh
+
+# WireGuard setup
+wireguard:
+	@echo "Setting up WireGuard..."
+	@./scripts/wg.sh
