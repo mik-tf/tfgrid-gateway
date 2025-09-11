@@ -31,6 +31,7 @@
     msg: |
       Debug variables:
       gateway_type: {{ gateway_type | default('gateway_nat') }}
+      GATEWAY_TYPE env: {{ lookup('env', 'GATEWAY_TYPE') | default('NOT_SET') }}
       ansible_loadavg: {{ ansible_loadavg | default('N/A') }}
       ansible_hostname: {{ ansible_hostname | default('N/A') }}
       ansible_uptime_seconds: {{ ansible_uptime_seconds | default('N/A') }}
