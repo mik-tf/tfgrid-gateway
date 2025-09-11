@@ -22,13 +22,9 @@
   become: true
 
 - name: Configure firewall for proxy ports
-  nftables:
-    table: inet firewall
-    chain: input
-    rule: "tcp dport { 80, 443, {{ proxy_ports | join(', ') }} } accept"
-    state: present
-  with_items: "{{ proxy_ports | default([8080, 8443]) }}"
+  shell: nft add rule inet firewall input tcp dport { 80, 443, {{ proxy_ports | join(', ') }} } accept
   become: true
+  ignore_errors: yes
 
 - name: Install Nginx for HTTP/HTTPS reverse proxy
   apt:

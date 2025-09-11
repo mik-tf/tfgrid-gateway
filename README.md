@@ -147,9 +147,100 @@ export GATEWAY_TYPE=gateway_proxy
 make ansible
 ```
 
-**Available Gateway Types:**
-- `gateway_nat`: Traditional NAT gateway using nftables for port forwarding and masquerading
-- `gateway_proxy`: Reverse proxy gateway using HAProxy and Nginx for load balancing and SSL termination
+## 🔀 Gateway Types: NAT vs Proxy
+
+Choose your gateway implementation based on your requirements:
+
+### **🏠 gateway_nat (Default)**
+**Traditional NAT-based gateway using nftables**
+
+**How it works:**
+- Uses Linux kernel's built-in NAT (Network Address Translation)
+- Forwards incoming traffic from public IP to internal VMs
+- Each VM gets its own port on the gateway's public IP
+- Direct port-to-VM mapping (8081 → VM7, 8082 → VM8, etc.)
+
+**Use cases:**
+- ✅ Simple port forwarding scenarios
+- ✅ Direct VM access without additional layers
+- ✅ Minimal resource overhead
+- ✅ Easy to understand and troubleshoot
+
+**Example:**
+```bash
+# VM7 website accessible at:
+http://GATEWAY_PUBLIC_IP:8081
+
+# VM8 website accessible at:
+http://GATEWAY_PUBLIC_IP:8082
+```
+
+### **🌐 gateway_proxy**
+**Advanced reverse proxy gateway using HAProxy + Nginx**
+
+**How it works:**
+- HAProxy handles TCP/UDP load balancing and SSL termination
+- Nginx provides HTTP/HTTPS reverse proxy with advanced features
+- Single entry point with intelligent routing
+- Advanced load balancing, health checks, and SSL management
+
+**Use cases:**
+- ✅ Production deployments requiring high availability
+- ✅ SSL/TLS termination and certificate management
+- ✅ Advanced routing and load balancing features
+- ✅ Enterprise-grade reverse proxy capabilities
+
+**Example:**
+```bash
+# All VMs accessible through single gateway:
+http://GATEWAY_PUBLIC_IP/vm7
+http://GATEWAY_PUBLIC_IP/vm8
+
+# With SSL support:
+https://GATEWAY_PUBLIC_IP/vm7
+```
+
+### **📊 Comparison Table**
+
+| Feature | gateway_nat | gateway_proxy |
+|---------|-------------|---------------|
+| **Complexity** | Simple | Advanced |
+| **Resource Usage** | Low | Medium |
+| **SSL Support** | Manual | Built-in |
+| **Load Balancing** | Basic | Advanced |
+| **Health Checks** | None | Built-in |
+| **URL Routing** | Port-based | Path-based |
+| **Setup Time** | Fast | Moderate |
+| **Maintenance** | Low | Medium |
+
+### **🎯 When to Use Each**
+
+**Use `gateway_nat` when:**
+- You want simple, direct port forwarding
+- Resource constraints are a concern
+- You need minimal configuration
+- Direct VM access is preferred
+
+**Use `gateway_proxy` when:**
+- You need production-grade features
+- SSL termination is required
+- Advanced load balancing is needed
+- You want path-based routing
+- Enterprise requirements demand it
+
+### **🔧 Configuration**
+
+```bash
+# Use NAT gateway (default)
+export GATEWAY_TYPE=gateway_nat
+make ansible
+
+# Use proxy gateway
+export GATEWAY_TYPE=gateway_proxy
+make ansible
+```
+
+Both gateway types are fully compatible with all network modes (`wireguard-only`, `mycelium-only`, `both`) and provide the same level of network redundancy and connectivity options.
 
 ### Network Types
 

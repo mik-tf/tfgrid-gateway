@@ -28,6 +28,114 @@ This document outlines the network architecture and implementation plan for supp
 
 The system supports three network modes:
 
+## Gateway Implementation Types
+
+### NAT Gateway (`gateway_nat`)
+
+#### **Architecture Overview**
+The NAT gateway uses Linux kernel's built-in Network Address Translation capabilities:
+
+```
+Internet → Gateway Public IP → NAT Rules → Internal VMs
+```
+
+#### **Technical Implementation**
+- **nftables**: Uses Linux kernel's nftables framework for packet filtering and NAT
+- **Port Forwarding**: Direct mapping of public ports to internal VM ports
+- **Masquerading**: Outbound traffic appears to come from gateway's public IP
+- **Firewall Rules**: Integrated packet filtering and security policies
+
+#### **Advantages**
+- **Performance**: Minimal overhead, kernel-level processing
+- **Simplicity**: Direct port-to-VM mapping
+- **Compatibility**: Works with any network protocol
+- **Resource Efficient**: Low CPU and memory usage
+
+#### **Use Cases**
+- Development and testing environments
+- Simple web services with direct port access
+- Resource-constrained deployments
+- Legacy applications requiring specific ports
+
+### Proxy Gateway (`gateway_proxy`)
+
+#### **Architecture Overview**
+The proxy gateway uses a layered approach with specialized proxy servers:
+
+```
+Internet → Gateway Public IP → HAProxy → Nginx → Internal VMs
+```
+
+#### **Technical Implementation**
+- **HAProxy**: TCP/UDP load balancer with health checks and SSL termination
+- **Nginx**: HTTP/HTTPS reverse proxy with advanced routing and caching
+- **SSL/TLS**: Built-in certificate management and encryption
+- **Load Balancing**: Intelligent distribution of traffic across backend servers
+
+#### **Advantages**
+- **Features**: Advanced routing, SSL, caching, and monitoring
+- **Scalability**: Better handling of high traffic loads
+- **Security**: Enhanced SSL/TLS capabilities
+- **Flexibility**: Path-based routing and URL rewriting
+
+#### **Use Cases**
+- Production web applications
+- APIs requiring advanced routing
+- SSL-heavy deployments
+- High-availability requirements
+- Enterprise-grade reverse proxy needs
+
+## Industry Context & Best Practices
+
+### **NAT Gateway Usage Patterns**
+
+**Industry Standard For:**
+- **Home Networks**: Consumer routers, SOHO environments
+- **Development**: Local development servers, testing environments
+- **Legacy Applications**: Apps requiring specific port configurations
+- **IoT Devices**: Embedded systems with fixed port requirements
+- **Gaming Servers**: Direct UDP/TCP port access requirements
+
+**Real-World Examples:**
+- Docker containers exposing specific ports
+- Minecraft servers requiring port 25565
+- Database servers needing port 3306
+- Legacy applications with hardcoded port expectations
+
+### **Proxy Gateway Usage Patterns**
+
+**Industry Standard For:**
+- **Web Applications**: Production web services, APIs
+- **Microservices**: Container orchestration platforms
+- **Cloud-Native**: Kubernetes, Docker Swarm deployments
+- **Enterprise Applications**: High-availability requirements
+- **API Gateways**: Centralized API management
+
+**Real-World Examples:**
+- Kubernetes Ingress controllers
+- AWS ALB/ELB load balancers
+- Nginx reverse proxy for microservices
+- API gateway for multiple backend services
+- SSL termination for encrypted traffic
+
+### **Decision Framework**
+
+#### **Choose NAT Gateway When:**
+- **Port Requirements**: Applications need specific, predictable ports
+- **Resource Constraints**: Limited CPU/memory on gateway host
+- **Simplicity**: Minimal configuration and maintenance overhead
+- **Direct Access**: Clients need direct TCP/UDP connectivity
+- **Legacy Support**: Existing applications with fixed port expectations
+
+#### **Choose Proxy Gateway When:**
+- **HTTP/HTTPS Focus**: Web applications, REST APIs, GraphQL
+- **Scalability**: High traffic loads requiring load balancing
+- **Security**: Advanced SSL/TLS, authentication, rate limiting
+- **Monitoring**: Detailed metrics, health checks, logging
+- **Flexibility**: URL rewriting, header manipulation, caching
+
+### Network Mode Options
+
 #### 1. `wireguard-only` (Default)
 - **Ansible Access**: Via WireGuard VPN
 - **Website Hosting**: Internal VMs bind to WireGuard IPs only
