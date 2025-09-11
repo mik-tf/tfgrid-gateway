@@ -62,7 +62,9 @@ ansible-galaxy role install -r platform/requirements.yml
 git clone https://github.com/mik-tf/tfgrid-gateway
 cd tfgrid-gateway
 cp infrastructure/credentials.auto.tfvars.example infrastructure/credentials.auto.tfvars
+cp .env.example .env  # Configure your deployment settings
 nano infrastructure/credentials.auto.tfvars  # Configure your node IDs
+nano .env  # Configure deployment options
 
 # Set your mnemonic (choose one method):
 # Option 1: From standard ThreeFold config
@@ -74,6 +76,30 @@ export TF_VAR_mnemonic="your_mnemonic_here"
 
 make  # Deploy everything automatically!
 ```
+
+### Configuration with .env File
+
+The project supports configuration via a `.env` file for easier management:
+
+```bash
+# Copy the example configuration
+cp .env.example .env
+
+# Edit your settings (uncomment the options you want)
+nano .env
+
+# Example .env file:
+# GATEWAY_TYPE=gateway_nat
+# MAIN_NETWORK=wireguard
+# NETWORK_MODE=both
+```
+
+**Benefits of .env configuration:**
+- ✅ All settings in one file
+- ✅ Version-controlled template (`.env.example`)
+- ✅ Git-safe (`.env` is gitignored)
+- ✅ Easy to share configurations
+- ✅ Self-documenting with comments
 
 ### Step-by-Step Deployment (Recommended for First Time)
 ```bash

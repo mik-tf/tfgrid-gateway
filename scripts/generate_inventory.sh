@@ -13,13 +13,23 @@ PROJECT_DIR="$SCRIPT_DIR/.."
 INFRASTRUCTURE_DIR="$PROJECT_DIR/infrastructure"
 PLATFORM_DIR="$PROJECT_DIR/platform"
 
-# Set network variables
+# Load configuration from .env file if it exists
+if [[ -f "$PROJECT_DIR/.env" ]]; then
+    source "$PROJECT_DIR/.env"
+fi
+
+# Use variables with fallbacks
 MAIN_NETWORK="${MAIN_NETWORK:-wireguard}"
 NETWORK_MODE="${NETWORK_MODE:-wireguard-only}"
+GATEWAY_TYPE="${GATEWAY_TYPE:-gateway_nat}"
 
 echo -e "${GREEN}Generating Ansible inventory from Terraform outputs${NC}"
+if [[ -f "$PROJECT_DIR/.env" ]]; then
+    echo -e "${YELLOW}Loading configuration from .env file${NC}"
+fi
 echo -e "${YELLOW}Using MAIN_NETWORK: ${MAIN_NETWORK}${NC}"
 echo -e "${YELLOW}Using NETWORK_MODE: ${NETWORK_MODE}${NC}"
+echo -e "${YELLOW}Using GATEWAY_TYPE: ${GATEWAY_TYPE}${NC}"
 
 # Check if Terraform state exists
 if [[ ! -f "$INFRASTRUCTURE_DIR/terraform.tfstate" ]]; then
