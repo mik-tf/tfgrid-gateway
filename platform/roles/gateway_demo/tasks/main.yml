@@ -34,11 +34,11 @@
     msg: |
       Debug variables:
       gateway_type: {{ gateway_type | default('gateway_nat') }}
-      gateway_type_debug: {{ gateway_type_debug | default('NOT_SET') }}
+      gateway_type from group_vars: {{ hostvars[inventory_hostname]['gateway_type'] | default('NOT_FOUND') }}
       GATEWAY_TYPE env: {{ lookup('env', 'GATEWAY_TYPE') | default('NOT_SET') }}
-      ansible_loadavg: {{ ansible_loadavg | default('N/A') }}
-      ansible_hostname: {{ ansible_hostname | default('N/A') }}
-      ansible_uptime_seconds: {{ ansible_uptime_seconds | default('N/A') }}
+      internal_vms: {{ internal_vms | default('NOT_SET') }}
+      mycelium_ip: {{ mycelium_ip | default('NOT_SET') }}
+      wireguard_ip: {{ wireguard_ip | default('NOT_SET') }}
   become: true
 
 - name: Configure nginx for gateway demo
