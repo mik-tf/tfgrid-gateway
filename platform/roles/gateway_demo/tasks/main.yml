@@ -33,6 +33,8 @@
     owner: root
     group: root
     mode: '0644'
+  vars:
+    gateway_type: "{{ gateway_type | default('gateway_nat') }}"
   become: true
   notify: reload nginx
 
