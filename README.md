@@ -6,6 +6,12 @@ A complete solution for deploying IPv4 gateway VMs on ThreeFold Grid using Terra
 
 This repository combines infrastructure provisioning via Terraform/OpenTofu with automated gateway configuration. The entire deployment process is automated through a single command, creating gateway VMs with public IPv4 addresses that enable internet access for IPv6-only workloads through NAT, proxies, WireGuard VPNs, and Mycelium network integration.
 
+### Preview
+
+![TFGrid Gateway Website](./img/tfgrid-gateway-picture-1.png)
+
+![TFGrid Internal VM Website](./img/tfgrid-gateway-picture-2.png)
+
 ### Features
 
 - **Public IPv4 Gateway**: VMs with dedicated public IPv4 addresses for internet connectivity
