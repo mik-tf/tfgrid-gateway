@@ -7,6 +7,7 @@ network_cidr: "10.1.0.0/16"
 wireguard_port: 51820
 network_mode: "{{ lookup('env', 'NETWORK_MODE') | default('wireguard-only', true) }}"
 disable_port_forwarding: "{{ lookup('env', 'DISABLE_PORT_FORWARDING') | default('false', true) | lower }}"
+gateway_type: "{{ lookup('env', 'GATEWAY_TYPE') | default('gateway_nat', true) }}"
 
 # Mycelium configuration
 mycelium_enabled: true
