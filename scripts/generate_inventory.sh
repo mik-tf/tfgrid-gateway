@@ -53,7 +53,7 @@ internal_ip=${GATEWAY_WIREGUARD_IP}
 EOF
 
 # Add internal VMs with port assignments
-echo "$INTERNAL_WIREGUARD_IPS" | jq -r 'to_entries[] | "\(.key) ansible_host=\(.value) wireguard_ip=\(.value) vm_port=808\(.key | tonumber - 6) vm_id=\(.key)"' >> "$INVENTORY_FILE"
+echo "$INTERNAL_WIREGUARD_IPS" | jq -r 'to_entries | sort_by(.key | tonumber) | to_entries[] | "\(.value.key) ansible_host=\(.value.value) wireguard_ip=\(.value.value) vm_port=808\(.key + 1) vm_id=\(.value.key)"' >> "$INVENTORY_FILE"
 
 # Add internal variables
 cat >> "$INVENTORY_FILE" << EOF

@@ -123,6 +123,7 @@ Since only port 80 is available, we implemented **path-based routing** using ngi
 ```
 http://185.206.122.150/vm7/ → 10.1.4.2:8081
 http://185.206.122.150/vm8/ → 10.1.5.2:8082
+http://185.206.122.150/vm11/ → 10.1.6.2:8083
 ```
 
 ### Implementation
@@ -173,6 +174,7 @@ Internet → Gateway VM (185.206.122.150:80) → nginx Reverse Proxy
                             Path-based Routing:
                            /vm7/ → 10.1.4.2:8081
                            /vm8/ → 10.1.5.2:8082
+                           /vm11/ → 10.1.6.2:8083
                                       ↓
                               WireGuard Network
                                 (10.1.0.0/16)
@@ -180,6 +182,7 @@ Internet → Gateway VM (185.206.122.150:80) → nginx Reverse Proxy
                                 Internal VMs
                            VM 7: 10.1.4.2:8081 (nginx)
                            VM 8: 10.1.5.2:8082 (nginx)
+                           VM 11: 10.1.6.2:8083 (nginx)
 ```
 
 ## Firewall Configuration
@@ -206,14 +209,14 @@ table inet firewall {
         ct state established,related accept
         iifname "lo" accept
         tcp dport 22 accept              # SSH
-        tcp dport { 80, 443, 8081, 8082 } accept  # HTTP/Demo ports
+        tcp dport { 80, 443, 8081, 8082, 8083 } accept  # HTTP/Demo ports
         udp dport 51820 accept           # WireGuard
     }
     
     chain forward {
         policy accept;  # SAFE: Only forwards between known interfaces
         iifname "ens2" oifname "ens3" accept        # Internal → External
-        iifname "ens3" oifname "ens2" tcp dport { 8081, 8082 } accept  # DNAT traffic
+        iifname "ens3" oifname "ens2" tcp dport { 8081, 8082, 8083 } accept  # DNAT traffic
         iifname "ens3" oifname "ens2" ct state established,related accept  # Return traffic
     }
 }
@@ -246,6 +249,8 @@ make demo          # Deploy web interface and reverse proxy
 make ping           # Test connectivity
 make address        # Show all VM addresses
 curl http://185.206.122.150/vm7/  # Test reverse proxy
+curl http://185.206.122.150/vm8/  # Test VM 8
+curl http://185.206.122.150/vm11/ # Test VM 11
 ```
 
 ## Key Files and Their Purposes
