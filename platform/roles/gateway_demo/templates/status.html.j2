@@ -358,7 +358,7 @@
                     <div class="label">Mycelium IPs:</div>
                     <div class="value ipv6">
 {% for host in groups['internal'] %}
-                        VM {{ host }}: {{ hostvars[host]['internal_' + host + '_mycelium_ip'] | default('N/A') }}{% if not loop.last %}<br>{% endif %}
+                        VM {{ host }}: {{ hostvars[host]['mycelium_ip'] | default('N/A') }}{% if not loop.last %}<br>{% endif %}
 {% endfor %}
                     </div>
                 </div>
