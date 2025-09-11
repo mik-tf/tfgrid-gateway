@@ -26,6 +26,16 @@
     gateway_type: "{{ gateway_type | default('gateway_nat') }}"
   become: true
 
+- name: Debug variables before template
+  debug:
+    msg: |
+      Debug variables:
+      gateway_type: {{ gateway_type | default('gateway_nat') }}
+      ansible_loadavg: {{ ansible_loadavg | default('N/A') }}
+      ansible_hostname: {{ ansible_hostname | default('N/A') }}
+      ansible_uptime_seconds: {{ ansible_uptime_seconds | default('N/A') }}
+  become: true
+
 - name: Configure nginx for gateway demo
   template:
     src: nginx.conf.j2
@@ -33,14 +43,6 @@
     owner: root
     group: root
     mode: '0644'
-  vars:
-    gateway_type: "{{ gateway_type | default('gateway_nat') }}"
-    load_average: "{{ ansible_loadavg['1-min'] | default('N/A') }}"
-    public_ipv4: "{{ ansible_default_ipv4.address | default('N/A') }}"
-    hostname: "{{ ansible_hostname | default('gateway') }}"
-    uptime_seconds: "{{ ansible_uptime_seconds | int | default(0) }}"
-    memory_total_mb: "{{ ansible_memtotal_mb | int | default(0) }}"
-    architecture: "{{ ansible_architecture | default('x86_64') }}"
   become: true
   notify: reload nginx
 

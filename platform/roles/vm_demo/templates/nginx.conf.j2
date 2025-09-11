@@ -28,14 +28,14 @@ server {
             "vm_id": "{{ vm_id | default(inventory_hostname) }}",
             "wireguard_ip": "{{ wireguard_ip | default("N/A") }}",
             "mycelium_ip": "{{ mycelium_ip | default("N/A") }}",
-            "hostname": "{{ hostname | default("vm") }}",
+            "hostname": "{{ ansible_hostname | default("vm") }}",
             "gateway_type": "{{ gateway_type | default("gateway_nat") }}",
             "network": "{{ network | default("test") }}",
-            "timestamp": "{{ timestamp | default("N/A") }}",
+            "timestamp": "{{ ansible_date_time.iso8601 | default("N/A") }}",
             "system": {
-                "architecture": "{{ architecture | default("N/A") }}",
-                "distribution": "{{ distribution | default("N/A") }}",
-                "kernel": "{{ kernel | default("N/A") }}"
+                "architecture": "{{ ansible_architecture | default("N/A") }}",
+                "distribution": "{{ ansible_distribution | default("N/A") }}",
+                "kernel": "{{ ansible_kernel | default("N/A") }}"
             }
         }';
     }

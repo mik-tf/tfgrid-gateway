@@ -31,13 +31,6 @@
     owner: root
     group: root
     mode: '0644'
-  vars:
-    gateway_type: "{{ gateway_type | default('gateway_nat') }}"
-    hostname: "{{ ansible_hostname | default('vm') }}"
-    timestamp: "{{ ansible_date_time.iso8601 | default('N/A') }}"
-    architecture: "{{ ansible_architecture | default('N/A') }}"
-    distribution: "{{ ansible_distribution | default('N/A') }}"
-    kernel: "{{ ansible_kernel | default('N/A') }}"
   become: true
   notify: reload nginx
 
