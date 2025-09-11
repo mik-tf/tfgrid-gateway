@@ -80,7 +80,7 @@ if [[ "$MAIN_NETWORK" == "mycelium" ]]; then
     done
 else
     # Use wireguard IPs for ansible_host (default)
-    echo "$INTERNAL_WIREGUARD_IPS" | jq -r 'to_entries | sort_by(.key | tonumber) | to_entries[] | "\(.value.key) ansible_host=\(.value.value) wireguard_ip=\(.value.value) vm_port=808\(.key + 1) vm_id=\(.value.key)"' >> "$INVENTORY_FILE"
+    echo "$INTERNAL_WIREGUARD_IPS" | jq -r 'to_entries | sort_by(.key | tonumber) | to_entries[] | "\(.value.key) ansible_host=\(.value.value) wireguard_ip=\(.value.value) vm_port=\(8001 + .key) vm_id=\(.value.key)"' >> "$INVENTORY_FILE"
 fi
 
 # Add internal variables
