@@ -13,7 +13,11 @@ PROJECT_DIR="$SCRIPT_DIR/.."
 INFRASTRUCTURE_DIR="$PROJECT_DIR/infrastructure"
 PLATFORM_DIR="$PROJECT_DIR/platform"
 
+# Set MAIN_NETWORK variable (default: wireguard)
+MAIN_NETWORK="${MAIN_NETWORK:-wireguard}"
+
 echo -e "${GREEN}Generating Ansible inventory from Terraform outputs${NC}"
+echo -e "${YELLOW}Using MAIN_NETWORK: ${MAIN_NETWORK}${NC}"
 
 # Check if Terraform state exists
 if [[ ! -f "$INFRASTRUCTURE_DIR/terraform.tfstate" ]]; then
@@ -53,7 +57,19 @@ internal_ip=${GATEWAY_WIREGUARD_IP}
 EOF
 
 # Add internal VMs with port assignments
-echo "$INTERNAL_WIREGUARD_IPS" | jq -r 'to_entries | sort_by(.key | tonumber) | to_entries[] | "\(.value.key) ansible_host=\(.value.value) wireguard_ip=\(.value.value) vm_port=808\(.key + 1) vm_id=\(.value.key)"' >> "$INVENTORY_FILE"
+if [[ "$MAIN_NETWORK" == "mycelium" ]]; then
+    # Use mycelium IPs for ansible_host
+    echo "$INTERNAL_WIREGUARD_IPS" | jq -r 'to_entries | sort_by(.key | tonumber) | .[].key' | \
+    while read -r vm_id; do
+        wireguard_ip=$(echo "$INTERNAL_WIREGUARD_IPS" | jq -r ".\"$vm_id\"")
+        mycelium_ip=$(echo "$INTERNAL_MYCELIUM_IPS" | jq -r ".\"$vm_id\"")
+        port=$((808 + vm_id))
+        echo "${vm_id} ansible_host=${mycelium_ip} wireguard_ip=${wireguard_ip} vm_port=${port} vm_id=${vm_id}" >> "$INVENTORY_FILE"
+    done
+else
+    # Use wireguard IPs for ansible_host (default)
+    echo "$INTERNAL_WIREGUARD_IPS" | jq -r 'to_entries | sort_by(.key | tonumber) | to_entries[] | "\(.value.key) ansible_host=\(.value.value) wireguard_ip=\(.value.value) vm_port=808\(.key + 1) vm_id=\(.value.key)"' >> "$INVENTORY_FILE"
+fi
 
 # Add internal variables
 cat >> "$INVENTORY_FILE" << EOF
@@ -115,11 +131,20 @@ EOF
 
 echo -e "${GREEN}Inventory generated successfully!${NC}"
 echo "Inventory file: $INVENTORY_FILE"
+echo "Main network: $MAIN_NETWORK"
 echo ""
 echo -e "${YELLOW}Available gateway types:${NC}"
 echo "  - gateway_nat: NAT-based gateway with nftables"
 echo "  - gateway_proxy: Proxy-based gateway with HAProxy/Nginx"
 echo ""
+echo -e "${YELLOW}Available network types:${NC}"
+echo "  - wireguard: Use WireGuard VPN for Ansible connectivity (default)"
+echo "  - mycelium: Use Mycelium IPv6 overlay for Ansible connectivity"
+echo ""
 echo -e "${YELLOW}To use a specific gateway type:${NC}"
 echo "  export GATEWAY_TYPE=gateway_proxy"
 echo "  ansible-playbook -i platform/inventory.ini platform/site.yml"
+echo ""
+echo -e "${YELLOW}To use a specific network type:${NC}"
+echo "  export MAIN_NETWORK=mycelium"
+echo "  make inventory"

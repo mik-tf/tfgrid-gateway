@@ -125,6 +125,28 @@ make ansible
 - `gateway_nat`: Traditional NAT gateway using nftables for port forwarding and masquerading
 - `gateway_proxy`: Reverse proxy gateway using HAProxy and Nginx for load balancing and SSL termination
 
+### Network Types
+
+Choose your network connectivity for Ansible by setting the `MAIN_NETWORK` environment variable:
+
+```bash
+# WireGuard VPN (default)
+export MAIN_NETWORK=wireguard
+make inventory
+
+# Mycelium IPv6 overlay network
+export MAIN_NETWORK=mycelium
+make inventory
+```
+
+**Available Network Types:**
+- `wireguard`: Use WireGuard VPN for Ansible SSH connectivity (default, maintains current behavior)
+- `mycelium`: Use Mycelium IPv6 overlay network for Ansible SSH connectivity
+
+**When to use each network:**
+- **WireGuard**: More reliable for complex network setups, better performance for large deployments
+- **Mycelium**: Useful when WireGuard has connectivity issues, provides IPv6-native connectivity
+
 ## 🎯 Live Demo System
 
 The tfgrid-gateway project includes a comprehensive live demo system that makes it easy to see and test gateway functionality in real-time.
