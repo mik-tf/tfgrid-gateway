@@ -45,7 +45,7 @@
             <p><strong>Mycelium IP:</strong> {{ hostvars[inventory_hostname]['internal_' + inventory_hostname + '_mycelium_ip'] | default('N/A') }}</p>
             <p><strong>Port:</strong> <span class="port-info">{{ vm_port | default('8080') }}</span></p>
             <p><strong>Hostname:</strong> {{ ansible_hostname }}</p>
-            <p><strong>Gateway Access:</strong> <a href="http://{{ hostvars['gateway']['ansible_default_ipv4']['address'] }}/vm{{ inventory_hostname }}/" target="_blank">{{ hostvars['gateway']['ansible_default_ipv4']['address'] }}/vm{{ inventory_hostname }}/ ↗️</a></p>
+            <p><strong>Gateway Access:</strong> <a href="http://{{ hostvars['gateway']['ansible_default_ipv4']['address'] }}/" target="_blank">{{ hostvars['gateway']['ansible_default_ipv4']['address'] }}/ ↗️</a></p>
             <p><strong>Timestamp:</strong> {{ ansible_date_time.iso8601 }}</p>
         </div>
         <div class="vm-info">
@@ -53,7 +53,7 @@
             <p>✅ Nginx is running and serving this page on port {{ vm_port | default('8080') }}</p>
             <p>✅ Gateway reverse proxy configured for path-based access</p>
             <p>ℹ️ Direct port access (gateway:{{ vm_port }}) blocked by infrastructure firewall</p>
-            <p>ℹ️ Use gateway path: /vm{{ inventory_hostname }}/ for external access</p>
+            <p>ℹ️ Use gateway root path: / for external access</p>
         </div>
     </div>
 </body>
