@@ -9,5 +9,8 @@ network_mode: "{{ lookup('env', 'NETWORK_MODE') | default('wireguard-only', true
 disable_port_forwarding: "{{ lookup('env', 'DISABLE_PORT_FORWARDING') | default('false', true) | lower }}"
 gateway_type: "{{ lookup('env', 'GATEWAY_TYPE') | default('gateway_nat', true) }}"
 
+# ThreeFold Grid network
+tfgrid_network: "test"
+
 # Mycelium configuration
 mycelium_enabled: true
