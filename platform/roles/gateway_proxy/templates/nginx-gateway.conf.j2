@@ -60,6 +60,8 @@ server {
 }
 
 {% if enable_ssl | default(false) %}
+# SSL server block (only included when certificates exist)
+# This block is conditionally included based on certificate availability
 server {
     listen 443 ssl http2;
     server_name {{ domain_name | default('_') }};

@@ -84,10 +84,9 @@
 
     - name: Generate SSL certificate (production)
       command: >
-        certbot --nginx -d {{ domain_name }}
+        certbot certonly --standalone -d {{ domain_name }}
         --non-interactive --agree-tos
         --email {{ ssl_email | default('admin@' + domain_name) }}
-        --redirect
       become: true
       when:
         - domain_name is defined
@@ -97,16 +96,22 @@
 
     - name: Generate SSL certificate (staging for testing)
       command: >
-        certbot --nginx -d {{ domain_name }}
+        certbot certonly --standalone -d {{ domain_name }}
         --staging --non-interactive --agree-tos
         --email {{ ssl_email | default('admin@' + domain_name) }}
-        --redirect
       become: true
       when:
         - domain_name is defined
         - ssl_email is defined or True
         - not ssl_cert.stat.exists
         - ssl_staging | default(false) | bool == true
+
+    - name: Reload nginx after SSL certificate generation
+      systemd:
+        name: nginx
+        state: reloaded
+      become: true
+      when: ssl_cert.stat.exists
 
     - name: Set up automatic certificate renewal
       cron:
