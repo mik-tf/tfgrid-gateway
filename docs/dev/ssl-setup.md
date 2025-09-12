@@ -66,7 +66,7 @@ nano .env
 # Uncomment and modify these lines:
 # DOMAIN_NAME=mygateway.example.com
 # ENABLE_SSL=true
-# GATEWAY_TYPE=gateway_proxy
+# GATEWAY_TYPE=gateway_proxy  # Required for SSL!
 # SSL_EMAIL=admin@mygateway.example.com
 ```
 

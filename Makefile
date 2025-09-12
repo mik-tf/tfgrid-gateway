@@ -146,21 +146,29 @@ ssl-setup:
 	@if [ -f .env ]; then set -a && . ./.env && set +a; fi; \
 	if [ -z "$$DOMAIN_NAME" ]; then \
 		echo "❌ Error: DOMAIN_NAME is required for SSL setup"; \
-		echo "   Set it in .env file or export:"; \
-		echo "   export DOMAIN_NAME=mygateway.example.com"; \
+		echo "   Add to .env file:"; \
+		echo "   DOMAIN_NAME=mygateway.example.com"; \
 		echo "   make ssl-setup"; \
 		exit 1; \
 	fi; \
 	if [ "$$ENABLE_SSL" != "true" ]; then \
 		echo "❌ Error: ENABLE_SSL must be 'true' for SSL setup"; \
-		echo "   Set it in .env file or export:"; \
-		echo "   export ENABLE_SSL=true"; \
+		echo "   Add to .env file:"; \
+		echo "   ENABLE_SSL=true"; \
 		echo "   make ssl-setup"; \
 		exit 1; \
 	fi; \
 	if [ "$$GATEWAY_TYPE" != "gateway_proxy" ]; then \
-		echo "⚠️  Warning: SSL works best with gateway_proxy"; \
-		echo "   Current: $$GATEWAY_TYPE (recommended: gateway_proxy)"; \
+		echo "❌ Error: SSL requires gateway_proxy for SSL termination"; \
+		echo "   Current: $$GATEWAY_TYPE"; \
+		echo ""; \
+		echo "   To fix this:"; \
+		echo "   1. Update .env: GATEWAY_TYPE=gateway_proxy"; \
+		echo "   2. Redeploy: make demo"; \
+		echo "   3. Then run: make ssl-setup"; \
+		echo ""; \
+		echo "   Or deploy fresh with SSL: make ssl-demo"; \
+		exit 1; \
 	fi; \
 	./scripts/ssl-setup.sh
 

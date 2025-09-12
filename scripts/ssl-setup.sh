@@ -65,14 +65,19 @@ check_prerequisites() {
         exit 1
     fi
 
-    # Check if using proxy gateway
+    # Check if using proxy gateway (SSL requires nginx for termination)
     if [ "$GATEWAY_TYPE" != "gateway_proxy" ]; then
-        log_warning "SSL is designed for gateway_proxy. Current: $GATEWAY_TYPE"
-        read -p "Continue anyway? (y/N): " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            exit 1
-        fi
+        log_error "SSL requires gateway_proxy for proper SSL termination"
+        log_error "Current gateway type: $GATEWAY_TYPE"
+        echo ""
+        log_info "To fix this:"
+        echo "1. Update your .env file:"
+        echo "   GATEWAY_TYPE=gateway_proxy"
+        echo "2. Redeploy with: make demo"
+        echo "3. Then run SSL setup: make ssl-setup"
+        echo ""
+        log_info "Or deploy fresh with SSL: make ssl-demo"
+        exit 1
     fi
 
     log_success "Prerequisites check passed"
