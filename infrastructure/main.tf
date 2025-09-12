@@ -48,7 +48,7 @@ variable "internal_disk" {
   default = 25 # 25GB storage
 }
 
-variable "network" {
+variable "tfgrid_network" {
   type        = string
   default     = "main"
   description = "ThreeFold Grid network (main, test, dev)"
@@ -56,8 +56,8 @@ variable "network" {
 
 provider "grid" {
   mnemonic  = var.mnemonic
-  network   = var.network
-  relay_url = var.network == "main" ? "wss://relay.grid.tf" : "wss://relay.test.grid.tf"
+  network   = var.tfgrid_network
+  relay_url = var.tfgrid_network == "main" ? "wss://relay.grid.tf" : "wss://relay.test.grid.tf"
 }
 
 # Generate unique mycelium keys/seeds for all nodes
