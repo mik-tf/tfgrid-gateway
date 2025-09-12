@@ -82,6 +82,15 @@
       register: ssl_cert
       become: true
 
+    - name: Stop nginx for certificate challenge
+      systemd:
+        name: nginx
+        state: stopped
+      become: true
+      when:
+        - domain_name is defined
+        - not ssl_cert.stat.exists
+
     - name: Generate SSL certificate (production)
       command: >
         certbot certonly --standalone -d {{ domain_name }}
@@ -106,12 +115,15 @@
         - not ssl_cert.stat.exists
         - ssl_staging | default(false) | bool == true
 
-    - name: Reload nginx after SSL certificate generation
+    - name: Start nginx after certificate generation
       systemd:
         name: nginx
-        state: reloaded
+        state: started
       become: true
-      when: ssl_cert.stat.exists
+      when:
+        - domain_name is defined
+        - ssl_cert.stat.exists
+
 
     - name: Set up automatic certificate renewal
       cron:
