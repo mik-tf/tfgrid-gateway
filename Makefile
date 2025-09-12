@@ -50,12 +50,12 @@ help:
 	@echo "  export NETWORK_MODE=mycelium-only   - Websites hosted on Mycelium only"
 	@echo "  export NETWORK_MODE=both            - Websites hosted on both networks (redundancy)"
 	@echo ""
-	@echo "SSL Configuration (set DOMAIN_NAME and ENABLE_SSL environment variables):"
-	@echo "  export DOMAIN_NAME=mygateway.example.com"
-	@echo "  export ENABLE_SSL=true"
-	@echo "  export GATEWAY_TYPE=gateway_proxy   # Required for SSL"
-	@echo "  export SSL_EMAIL=admin@mygateway.example.com  # Optional"
-	@echo "  export SSL_STAGING=true             # Use for testing (optional)"
+	@echo "SSL Configuration (set in .env file or export):"
+	@echo "  DOMAIN_NAME=mygateway.example.com"
+	@echo "  ENABLE_SSL=true"
+	@echo "  GATEWAY_TYPE=gateway_proxy          # Required for SSL"
+	@echo "  SSL_EMAIL=admin@mygateway.example.com  # Optional"
+	@echo "  SSL_STAGING=false                   # Set true for testing"
 	@echo ""
 	@echo "SSL Deployment:"
 	@echo "  make ssl-demo         - Deploy gateway with SSL/TLS support"
@@ -143,15 +143,24 @@ wireguard:
 # SSL setup
 ssl-setup:
 	@echo "Setting up SSL certificates..."
-	@if [ -z "$$DOMAIN_NAME" ]; then \
-		echo "Error: DOMAIN_NAME environment variable is required"; \
-		echo "Example: export DOMAIN_NAME=mygateway.example.com"; \
+	@if [ -f .env ]; then set -a && . ./.env && set +a; fi; \
+	if [ -z "$$DOMAIN_NAME" ]; then \
+		echo "❌ Error: DOMAIN_NAME is required for SSL setup"; \
+		echo "   Set it in .env file or export:"; \
+		echo "   export DOMAIN_NAME=mygateway.example.com"; \
+		echo "   make ssl-setup"; \
 		exit 1; \
 	fi; \
 	if [ "$$ENABLE_SSL" != "true" ]; then \
-		echo "Error: ENABLE_SSL must be set to 'true'"; \
-		echo "Example: export ENABLE_SSL=true"; \
+		echo "❌ Error: ENABLE_SSL must be 'true' for SSL setup"; \
+		echo "   Set it in .env file or export:"; \
+		echo "   export ENABLE_SSL=true"; \
+		echo "   make ssl-setup"; \
 		exit 1; \
+	fi; \
+	if [ "$$GATEWAY_TYPE" != "gateway_proxy" ]; then \
+		echo "⚠️  Warning: SSL works best with gateway_proxy"; \
+		echo "   Current: $$GATEWAY_TYPE (recommended: gateway_proxy)"; \
 	fi; \
 	./scripts/ssl-setup.sh
 
@@ -159,10 +168,24 @@ ssl-demo:
 	@echo "Deploying gateway with SSL support..."
 	@if [ -f .env ]; then set -a && . ./.env && set +a; fi; \
 	if [ -z "$$DOMAIN_NAME" ]; then \
-		echo "Error: DOMAIN_NAME environment variable is required for SSL"; \
-		echo "Example: export DOMAIN_NAME=mygateway.example.com"; \
+		echo "❌ Error: DOMAIN_NAME is required for SSL deployment"; \
+		echo "   Add to .env file:"; \
+		echo "   DOMAIN_NAME=mygateway.example.com"; \
+		echo "   ENABLE_SSL=true"; \
+		echo "   make ssl-demo"; \
 		exit 1; \
 	fi; \
+	if [ "$$ENABLE_SSL" != "true" ]; then \
+		echo "❌ Error: ENABLE_SSL must be 'true' for SSL deployment"; \
+		echo "   Add to .env file:"; \
+		echo "   ENABLE_SSL=true"; \
+		echo "   make ssl-demo"; \
+		exit 1; \
+	fi; \
+	echo "🔐 SSL Configuration:"; \
+	echo "   Domain: $$DOMAIN_NAME"; \
+	echo "   Gateway: $${GATEWAY_TYPE:-gateway_proxy}"; \
+	echo "   Email: $${SSL_EMAIL:-admin@$$DOMAIN_NAME}"; \
 	cd platform && ansible-playbook -i inventory.ini \
 		--extra-vars "gateway_type=$${GATEWAY_TYPE:-gateway_proxy} \
 		              network_mode=$${NETWORK_MODE:-wireguard-only} \

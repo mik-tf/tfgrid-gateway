@@ -284,6 +284,25 @@ curl https://mygateway.example.com/vm7
 
 ### SSL Configuration Examples
 
+#### Using .env file (Recommended)
+```bash
+# Copy the example configuration
+cp .env.example .env
+
+# Edit your settings (uncomment and modify SSL section)
+nano .env
+
+# Example SSL configuration in .env:
+# DOMAIN_NAME=mygateway.example.com
+# ENABLE_SSL=true
+# GATEWAY_TYPE=gateway_proxy
+# SSL_EMAIL=admin@mygateway.example.com
+
+# Deploy with SSL
+make ssl-demo
+```
+
+#### Using environment variables
 ```bash
 # Basic SSL setup
 export DOMAIN_NAME=mygateway.example.com

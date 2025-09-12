@@ -53,17 +53,30 @@ TTL: 300
 
 ## Step 2: SSL Deployment
 
-### 2.1 Set Environment Variables
+### 2.1 Configure SSL Settings
 
+#### Option A: Use .env file (Recommended)
+```bash
+# Copy the example configuration
+cp .env.example .env
+
+# Edit your SSL settings
+nano .env
+
+# Uncomment and modify these lines:
+# DOMAIN_NAME=mygateway.example.com
+# ENABLE_SSL=true
+# GATEWAY_TYPE=gateway_proxy
+# SSL_EMAIL=admin@mygateway.example.com
+```
+
+#### Option B: Use environment variables
 ```bash
 # Set your domain name
 export DOMAIN_NAME=mygateway.example.com
-
-# Enable SSL in deployment
 export ENABLE_SSL=true
-
-# Choose gateway type (proxy recommended for SSL)
 export GATEWAY_TYPE=gateway_proxy
+export SSL_EMAIL=admin@mygateway.example.com
 ```
 
 ### 2.2 Deploy with SSL
