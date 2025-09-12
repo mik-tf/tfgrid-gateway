@@ -4,9 +4,10 @@ This guide explains how to set up SSL/TLS certificates for your ThreeFold Grid G
 
 ## Prerequisites
 
-- A registered domain name (e.g., `mygateway.example.com`)
-- Access to your domain's DNS settings
-- Your gateway's public IPv4 address from ThreeFold Grid
+- ✅ **A registered domain name** (e.g., `mygateway.example.com`)
+- ✅ **Access to your domain's DNS settings**
+- ✅ **Your gateway's public IPv4 address** from ThreeFold Grid
+- ✅ **`GATEWAY_TYPE=gateway_proxy`** (REQUIRED for SSL - see troubleshooting below)
 
 ## Step 1: Domain Setup
 
@@ -81,15 +82,39 @@ export SSL_EMAIL=admin@mygateway.example.com
 
 ### 2.2 Deploy with SSL
 
+#### Option A: Complete SSL Deployment (Recommended)
 ```bash
-# Complete deployment with SSL
-make ssl-demo
-
-# Or step by step:
-make infrastructure
-make inventory
+# Deploys infrastructure + gateway + SSL in one command
 make ssl-demo
 ```
+
+#### Option B: Step-by-Step SSL Deployment
+```bash
+# 1. Deploy infrastructure
+make infrastructure
+
+# 2. Generate inventory
+make inventory
+
+# 3. Deploy with SSL
+make ssl-demo
+```
+
+#### Option C: Add SSL to Existing Deployment
+```bash
+# If you already have a deployed gateway:
+make ssl-setup
+```
+
+### SSL Commands Explained
+
+| Command | When to Use | What it Does |
+|---------|-------------|--------------|
+| `make ssl-demo` | **Fresh deployments** | Deploys everything with SSL from start |
+| `make ssl-setup` | **Existing deployments** | Adds SSL to already deployed gateway |
+| `make demo` | **No SSL needed** | Regular deployment without SSL |
+
+**Important:** Both `ssl-demo` and `ssl-setup` require `GATEWAY_TYPE=gateway_proxy`
 
 ### 2.3 Verify SSL Setup
 
@@ -136,6 +161,38 @@ ssh root@gateway_ip "nginx -t"
 2. **Certificate failed**: Ensure domain resolves to gateway IP before deploying SSL
 3. **Port 80 blocked**: ThreeFold Grid blocks non-standard ports, but port 80 works
 4. **Firewall issues**: Check that port 80 is allowed in your gateway firewall rules
+5. **Wrong gateway type**: SSL requires `gateway_proxy` - see troubleshooting below
+
+### Gateway Type Issues
+
+**Problem:** Getting error "SSL requires gateway_proxy for SSL termination"
+
+**Solution:**
+```bash
+# 1. Check your current gateway type
+grep GATEWAY_TYPE .env
+
+# 2. Update to gateway_proxy if needed
+echo "GATEWAY_TYPE=gateway_proxy" >> .env
+
+# 3. Redeploy with new gateway type
+make demo
+
+# 4. Now SSL setup will work
+make ssl-setup
+```
+
+**Why gateway_proxy is required:**
+- `gateway_nat`: Uses port forwarding only (no SSL termination)
+- `gateway_proxy`: Uses nginx reverse proxy (handles SSL certificates)
+
+**Quick fix for existing deployments:**
+```bash
+# Change gateway type and redeploy
+sed -i 's/GATEWAY_TYPE=.*/GATEWAY_TYPE=gateway_proxy/' .env
+make demo
+make ssl-setup
+```
 
 ## Step 4: Advanced Configuration
 

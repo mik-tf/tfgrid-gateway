@@ -120,9 +120,20 @@ server {
 }
 {% endif %}
 
-# Default server block
+# Default server block (only when no domain is configured for SSL)
+{% if not (domain_name is defined and enable_ssl | default(false)) %}
 server {
     listen 80 default_server;
     server_name _;
     return 444;
 }
+{% endif %}
+
+# Additional default server for IPv6 (only when no domain is configured for SSL)
+{% if not (domain_name is defined and enable_ssl | default(false)) %}
+server {
+    listen [::]:80 default_server;
+    server_name _;
+    return 444;
+}
+{% endif %}

@@ -49,12 +49,13 @@
   become: true
   notify: reload nginx
 
-- name: Remove default Nginx site
+- name: Remove default Nginx site (only when not using SSL)
   file:
     path: /etc/nginx/sites-enabled/default
     state: absent
   become: true
   notify: reload nginx
+  when: not (enable_ssl | default(false) and domain_name is defined)
 
 - name: Enable Nginx service
   systemd:

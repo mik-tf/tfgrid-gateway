@@ -60,12 +60,13 @@
   become: true
   notify: reload nginx
 
-- name: Disable default nginx site
+- name: Disable default nginx site (only when not using SSL)
   file:
     path: /etc/nginx/sites-enabled/default
     state: absent
   become: true
   notify: reload nginx
+  when: not (enable_ssl | default(false) and domain_name is defined)
 
 - name: Start and enable nginx
   systemd:

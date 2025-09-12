@@ -245,7 +245,9 @@ Both gateway types are fully compatible with all network modes (`wireguard-only`
 
 ## 🔒 SSL/TLS Setup with Domain Name
 
-The tfgrid-gateway supports **free SSL certificates** from Let's Encrypt for secure HTTPS access. This requires a domain name pointing to your gateway's IPv4 address.
+The tfgrid-gateway supports **free SSL certificates** from Let's Encrypt for secure HTTPS access. This requires:
+- ✅ A domain name pointing to your gateway's IPv4 address
+- ✅ **GATEWAY_TYPE=gateway_proxy** (SSL requires nginx for certificate handling)
 
 ### Quick SSL Setup
 
@@ -282,6 +284,13 @@ curl https://mygateway.example.com/vm7
 | **Setup** | Immediate | Requires domain + DNS |
 | **Cost** | Free | ~$10-15/year (domain) |
 
+### SSL Prerequisites
+
+**Before setting up SSL, ensure you have:**
+1. ✅ **Domain name** registered and DNS A record pointing to your gateway IP
+2. ✅ **GATEWAY_TYPE=gateway_proxy** in your `.env` file
+3. ✅ **Domain resolves** to your gateway's IPv4 address
+
 ### SSL Configuration Examples
 
 #### Using .env file (Recommended)
@@ -295,11 +304,27 @@ nano .env
 # Example SSL configuration in .env:
 # DOMAIN_NAME=mygateway.example.com
 # ENABLE_SSL=true
-# GATEWAY_TYPE=gateway_proxy  # Required for SSL!
+# GATEWAY_TYPE=gateway_proxy  # REQUIRED for SSL!
 # SSL_EMAIL=admin@mygateway.example.com
 
 # Deploy with SSL
 make ssl-demo
+```
+
+#### Troubleshooting Gateway Type
+```bash
+# If you get an error about gateway type:
+# 1. Check your current gateway type
+grep GATEWAY_TYPE .env
+
+# 2. Update if needed
+echo "GATEWAY_TYPE=gateway_proxy" >> .env
+
+# 3. Redeploy
+make demo
+
+# 4. Then setup SSL
+make ssl-setup
 ```
 
 #### Using environment variables

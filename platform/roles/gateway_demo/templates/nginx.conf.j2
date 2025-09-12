@@ -1,11 +1,11 @@
 server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
+    listen 80{% if enable_ssl | default(false) %}{% else %} default_server{% endif %};
+    listen [::]:80{% if enable_ssl | default(false) %}{% else %} default_server{% endif %};
 
     root /var/www/gateway-demo;
     index index.html;
 
-    server_name _;
+    server_name {% if domain_name is defined and enable_ssl | default(false) %}{{ domain_name }}{% else %}_{% endif %};
 
     # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
