@@ -308,10 +308,10 @@
                 <h3>🌐 Network Configuration</h3>
                 <div class="info-grid">
                     <div class="label">Gateway Type:</div>
-                    <div class="value">{{ gateway_type | default('gateway_nat') | title }}</div>
+                    <div class="value">{% if gateway_type == 'gateway_nat' %}NAT{% elif gateway_type == 'gateway_proxy' %}Proxy{% else %}{{ gateway_type | default('NAT') | title }}{% endif %}</div>
 
                     <div class="label">Network:</div>
-                    <div class="value">{{ tfgrid_network | default('test') }}</div>
+                    <div class="value">{{ tfgrid_network | default('test') | title }}</div>
 
                     <div class="label">Public IPv4:</div>
                     <div class="value">{{ ansible_default_ipv4.address | default('N/A') }}</div>
