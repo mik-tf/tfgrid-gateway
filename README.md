@@ -384,6 +384,58 @@ ssh root@gateway_ip "nginx -t && systemctl status nginx"
 - **Certificate Pinning**: Ready for HPKP if needed
 - **OCSP Stapling**: Faster certificate validation
 
+## 🔐 SSL Termination Architecture
+
+The tfgrid-gateway implements **SSL termination at the gateway level** for optimal security and performance:
+
+### **SSL Termination Flow:**
+
+```
+🌐 Client Browser → 🔒 Gateway (SSL Termination) → 🖥️ Backend VMs (HTTP)
+     ↓                        ↓                              ↓
+   HTTPS                   SSL Certificate                  HTTP
+   Port 443              Let's Encrypt                    Ports 8001,8002,8003
+   Encrypted             Gateway Handles                  No SSL Needed
+   Traffic               Encryption/Decryption            on Backend VMs
+```
+
+### **How SSL Termination Works:**
+
+1. **Client Connection**: Browser connects to `https://yourdomain.com` using HTTPS
+2. **SSL Handshake**: Gateway presents Let's Encrypt SSL certificate
+3. **Encryption**: Secure encrypted tunnel established between client and gateway
+4. **Decryption**: Gateway decrypts HTTPS traffic to plain HTTP
+5. **Proxy**: Gateway forwards HTTP requests to backend VMs
+6. **Response**: Backend VMs respond with HTTP, gateway re-encrypts for client
+
+### **Benefits of SSL Termination:**
+
+- ✅ **Backend Simplicity**: VMs don't need SSL certificates or HTTPS configuration
+- ✅ **Centralized SSL**: Single certificate management point
+- ✅ **Performance**: SSL processing offloaded from backend servers
+- ✅ **Security**: SSL configuration managed at secure gateway level
+- ✅ **Cost Effective**: One certificate covers all backend services
+
+### **Security Architecture:**
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Client        │    │   Gateway        │    │   Backend VMs   │
+│   Browser       │    │   (SSL Gateway)  │    │   (HTTP Only)   │
+├─────────────────┤    ├──────────────────┤    ├─────────────────┤
+│ HTTPS (Port 443)│───▶│ SSL Termination │───▶│ HTTP (Ports     │
+│ Encrypted       │    │ Let's Encrypt   │    │ 8001,8002,8003) │
+│ Traffic         │    │ Certificate      │    │ Unencrypted     │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
+
+### **SSL Certificate Management:**
+
+- **Automatic Renewal**: Let's Encrypt certificates auto-renew every 90 days
+- **Zero Downtime**: Certificate renewal doesn't interrupt service
+- **Monitoring**: Certificate expiry monitoring and alerts
+- **Backup**: Certificate files backed up during deployment
+
 ### When to Use SSL
 
 **Use SSL when:**
