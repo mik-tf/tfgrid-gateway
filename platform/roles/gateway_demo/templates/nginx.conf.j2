@@ -18,9 +18,9 @@ server {
     location /api/status {
         default_type application/json;
         return 200 '{
-            "gateway_type": "gateway_nat",
+            "gateway_type": "{{ gateway_type | default("gateway_nat") }}",
             "public_ipv4": "{{ ansible_default_ipv4.address | default("N/A") }}",
-            "network": "{{ network | default("test") }}",
+            "network": "{{ network_mode | default("test") }}",
             "hostname": "{{ ansible_hostname | default("gateway") }}",
             "wireguard_ip": "{{ wireguard_ip | default("10.1.3.2") }}",
             "mycelium_ip": "{{ mycelium_ip | default("Not assigned") }}",

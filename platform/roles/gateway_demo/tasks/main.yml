@@ -34,8 +34,9 @@
     msg: |
       Debug variables:
       gateway_type: {{ gateway_type | default('gateway_nat') }}
-      gateway_type from group_vars: {{ hostvars[inventory_hostname]['gateway_type'] | default('NOT_FOUND') }}
+      network: {{ network | default('NOT_SET') }}
       GATEWAY_TYPE env: {{ lookup('env', 'GATEWAY_TYPE') | default('NOT_SET') }}
+      NETWORK env: {{ lookup('env', 'NETWORK') | default('NOT_SET') }}
       internal_vms: {{ internal_vms | default('NOT_SET') }}
       mycelium_ip: {{ mycelium_ip | default('NOT_SET') }}
       wireguard_ip: {{ wireguard_ip | default('NOT_SET') }}
