@@ -311,7 +311,7 @@
                     <div class="value">{{ gateway_type | default('gateway_nat') | title }}</div>
 
                     <div class="label">Network:</div>
-                    <div class="value">{{ network | default('test') }}</div>
+                    <div class="value">{{ tfgrid_network | default('test') }}</div>
 
                     <div class="label">Public IPv4:</div>
                     <div class="value">{{ ansible_default_ipv4.address | default('N/A') }}</div>

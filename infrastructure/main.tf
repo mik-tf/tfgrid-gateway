@@ -187,3 +187,8 @@ output "internal_mycelium_ips" {
   }
   description = "Mycelium IPs of internal VMs"
 }
+
+output "tfgrid_network" {
+  value       = var.tfgrid_network
+  description = "ThreeFold Grid network (main, test, dev)"
+}

@@ -45,6 +45,7 @@ echo -e "${YELLOW}Fetching Terraform outputs...${NC}"
 GATEWAY_PUBLIC_IP=$(tofu output -json gateway_public_ip 2>/dev/null | jq -r . 2>/dev/null | sed 's|/.*||' || echo "")
 GATEWAY_WIREGUARD_IP=$(tofu output -json gateway_wireguard_ip 2>/dev/null | jq -r . 2>/dev/null | sed 's|/.*||' || echo "")
 GATEWAY_MYCELIUM_IP=$(tofu output -json gateway_mycelium_ip 2>/dev/null | jq -r . 2>/dev/null || echo "")
+TFGRID_NETWORK=$(tofu output -json tfgrid_network 2>/dev/null | jq -r . 2>/dev/null || echo "test")
 
 INTERNAL_WIREGUARD_IPS=$(tofu output -json internal_wireguard_ips 2>/dev/null || echo "{}")
 INTERNAL_MYCELIUM_IPS=$(tofu output -json internal_mycelium_ips 2>/dev/null || echo "{}")
@@ -132,6 +133,9 @@ wireguard_port: 51820
 network_mode: "{{ lookup('env', 'NETWORK_MODE') | default('wireguard-only', true) }}"
 disable_port_forwarding: "{{ lookup('env', 'DISABLE_PORT_FORWARDING') | default('false', true) | lower }}"
 gateway_type: "{{ lookup('env', 'GATEWAY_TYPE') | default('gateway_nat', true) }}"
+
+# ThreeFold Grid network
+tfgrid_network: "$TFGRID_NETWORK"
 
 # Mycelium configuration
 mycelium_enabled: true
