@@ -20,6 +20,11 @@ server {
     listen 80;
     server_name {{ domain_name | default('_') }};
 
+    # Redirect HTTP to HTTPS when SSL is enabled
+    {% if enable_ssl | default(false) %}
+    return 301 https://$server_name$request_uri;
+    {% endif %}
+
     # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-XSS-Protection "1; mode=block" always;
@@ -63,10 +68,22 @@ server {
     ssl_certificate /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/{{ domain_name }}/privkey.pem;
 
-    # SSL security settings
+    # Enhanced SSL security settings
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384;
     ssl_prefer_server_ciphers off;
+
+    # SSL session caching
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 10m;
+
+    # OCSP Stapling
+    ssl_stapling on;
+    ssl_stapling_verify on;
+    ssl_trusted_certificate /etc/letsencrypt/live/{{ domain_name }}/chain.pem;
+
+    # HSTS (HTTP Strict Transport Security)
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
 
     # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;

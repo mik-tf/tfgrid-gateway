@@ -197,7 +197,8 @@ http://GATEWAY_PUBLIC_IP/vm7
 http://GATEWAY_PUBLIC_IP/vm8
 
 # With SSL support:
-https://GATEWAY_PUBLIC_IP/vm7
+https://mygateway.example.com/vm7
+https://mygateway.example.com/vm8
 ```
 
 ### **📊 Comparison Table**
@@ -241,6 +242,118 @@ make ansible
 ```
 
 Both gateway types are fully compatible with all network modes (`wireguard-only`, `mycelium-only`, `both`) and provide the same level of network redundancy and connectivity options.
+
+## 🔒 SSL/TLS Setup with Domain Name
+
+The tfgrid-gateway supports **free SSL certificates** from Let's Encrypt for secure HTTPS access. This requires a domain name pointing to your gateway's IPv4 address.
+
+### Quick SSL Setup
+
+```bash
+# 1. Register a domain name (e.g., mygateway.example.com)
+# 2. Point it to your gateway's IPv4 address via DNS A record
+# 3. Set environment variables
+export DOMAIN_NAME=mygateway.example.com
+export ENABLE_SSL=true
+export GATEWAY_TYPE=gateway_proxy  # Required for SSL
+
+# 4. Deploy with SSL
+make ssl-demo
+
+# 5. Access your secure gateway
+curl https://mygateway.example.com/vm7
+```
+
+### SSL Features
+
+- **🔒 Free SSL Certificates**: Let's Encrypt integration with automatic renewal
+- **🔄 HTTP to HTTPS Redirect**: Automatic redirection for security
+- **🛡️ Security Headers**: HSTS, CSP, and other security headers included
+- **📊 SSL Monitoring**: Certificate expiry monitoring and alerts
+- **⚡ Performance**: OCSP stapling and optimized SSL settings
+
+### SSL vs Non-SSL Access
+
+| Access Method | HTTP (Default) | HTTPS (with Domain) |
+|---------------|----------------|-------------------|
+| **Security** | ❌ Unencrypted | ✅ Encrypted |
+| **Browser Trust** | ⚠️ "Not Secure" | ✅ Trusted Certificate |
+| **URL** | `http://185.206.122.150/vm7` | `https://mygateway.example.com/vm7` |
+| **Setup** | Immediate | Requires domain + DNS |
+| **Cost** | Free | ~$10-15/year (domain) |
+
+### SSL Configuration Examples
+
+```bash
+# Basic SSL setup
+export DOMAIN_NAME=mygateway.example.com
+export ENABLE_SSL=true
+make ssl-demo
+
+# SSL with custom email for notifications
+export DOMAIN_NAME=mygateway.example.com
+export ENABLE_SSL=true
+export SSL_EMAIL=admin@mygateway.example.com
+make ssl-demo
+
+# SSL with staging certificates (for testing)
+export DOMAIN_NAME=mygateway.example.com
+export ENABLE_SSL=true
+export SSL_STAGING=true
+make ssl-demo
+```
+
+### DNS Setup for SSL
+
+1. **Register Domain**: Use any registrar (Namecheap, GoDaddy, etc.)
+2. **Add A Record**:
+   ```
+   Type: A
+   Name: @ (or your subdomain)
+   Value: YOUR_GATEWAY_IPv4_ADDRESS
+   TTL: 300
+   ```
+3. **Verify DNS**: `nslookup mygateway.example.com`
+4. **Deploy SSL**: `make ssl-demo`
+
+### SSL Troubleshooting
+
+```bash
+# Check certificate status
+ssh root@gateway_ip "certbot certificates"
+
+# Renew certificates manually
+ssh root@gateway_ip "certbot renew"
+
+# Test SSL connection
+openssl s_client -connect mygateway.example.com:443 -servername mygateway.example.com
+
+# Check nginx SSL configuration
+ssh root@gateway_ip "nginx -t && systemctl status nginx"
+```
+
+### SSL Security Features
+
+- **TLS 1.2/1.3 Only**: Legacy SSL versions disabled
+- **Strong Ciphers**: Only secure cipher suites allowed
+- **HSTS Headers**: HTTP Strict Transport Security enabled
+- **Certificate Pinning**: Ready for HPKP if needed
+- **OCSP Stapling**: Faster certificate validation
+
+### When to Use SSL
+
+**Use SSL when:**
+- ✅ Deploying production applications
+- ✅ Handling sensitive user data
+- ✅ Building customer-facing services
+- ✅ Complying with security requirements
+- ✅ Working with modern browsers/APIs
+
+**HTTP is fine for:**
+- 🔧 Development and testing
+- 🏠 Internal network access
+- 📊 Non-sensitive demonstrations
+- ⚡ Quick proof-of-concepts
 
 ### Network Types
 

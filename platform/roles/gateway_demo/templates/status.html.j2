@@ -338,15 +338,50 @@
                 </div>
             </div>
 
+            {% if enable_ssl | default(false) %}
+            <div class="card">
+                <h3>🔐 SSL/TLS Configuration</h3>
+                <div class="info-grid">
+                    <div class="label">SSL Status:</div>
+                    <div class="status enabled">Enabled ✓</div>
+
+                    <div class="label">Domain:</div>
+                    <div class="value">{{ domain_name | default('N/A') }}</div>
+
+                    <div class="label">Certificate:</div>
+                    <div class="value">Let's Encrypt</div>
+
+                    <div class="label">HTTPS URL:</div>
+                    <div class="value">
+                        <a href="https://{{ domain_name | default(ansible_default_ipv4.address) }}/" target="_blank" class="vm-link" style="background: linear-gradient(135deg, #10b981, #34d399);">
+                            https://{{ domain_name | default(ansible_default_ipv4.address) }}/ 🔒
+                        </a>
+                    </div>
+
+                    <div class="label">HTTP Redirect:</div>
+                    <div class="status active">Enabled ✓</div>
+
+                    <div class="label">HSTS:</div>
+                    <div class="status enabled">Enabled ✓</div>
+                </div>
+            </div>
+            {% endif %}
+
             <div class="card">
                 <h3>🖥️ Internal VMs</h3>
                 <div class="info-grid">
 {% for host in internal_vms %}
                     <div class="label">VM {{ host }} ({{ hostvars[host]['wireguard_ip'] | default('N/A') }}):</div>
                     <div class="value">
+                        {% if enable_ssl | default(false) and domain_name is defined %}
+                        <a href="https://{{ domain_name }}/vm{{ host }}/" target="_blank" class="vm-link" style="background: linear-gradient(135deg, #10b981, #34d399);">
+                            https://{{ domain_name }}/vm{{ host }}/ 🔒
+                        </a>
+                        {% else %}
                         <a href="http://{{ ansible_default_ipv4.address }}/vm{{ host }}/" target="_blank" class="vm-link">
                             http://{{ ansible_default_ipv4.address }}/vm{{ host }}/ ↗️
                         </a>
+                        {% endif %}
                     </div>
 {% endfor %}
 

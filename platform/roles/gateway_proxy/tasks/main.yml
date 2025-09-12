@@ -66,15 +66,58 @@
 - name: Configure SSL certificates (if enabled)
   when: enable_ssl | default(false)
   block:
-    - name: Install certbot for Let's Encrypt
+    - name: Install certbot and python3-certbot-nginx
       apt:
-        name: certbot
+        name:
+          - certbot
+          - python3-certbot-nginx
+        state: present
+        update_cache: yes
+      become: true
+
+    - name: Check if SSL certificate already exists
+      stat:
+        path: "/etc/letsencrypt/live/{{ domain_name }}/fullchain.pem"
+      register: ssl_cert
+      become: true
+
+    - name: Generate SSL certificate (production)
+      command: >
+        certbot --nginx -d {{ domain_name }}
+        --non-interactive --agree-tos
+        --email {{ ssl_email | default('admin@' + domain_name) }}
+        --redirect
+      become: true
+      when:
+        - domain_name is defined
+        - ssl_email is defined or True
+        - not ssl_cert.stat.exists
+        - ssl_staging | default(false) | bool == false
+
+    - name: Generate SSL certificate (staging for testing)
+      command: >
+        certbot --nginx -d {{ domain_name }}
+        --staging --non-interactive --agree-tos
+        --email {{ ssl_email | default('admin@' + domain_name) }}
+        --redirect
+      become: true
+      when:
+        - domain_name is defined
+        - ssl_email is defined or True
+        - not ssl_cert.stat.exists
+        - ssl_staging | default(false) | bool == true
+
+    - name: Set up automatic certificate renewal
+      cron:
+        name: "Let's Encrypt certificate renewal"
+        minute: "0"
+        hour: "12"
+        job: "certbot renew --quiet"
         state: present
       become: true
 
-    - name: Generate SSL certificate
-      command: certbot --nginx -d {{ domain_name }} --non-interactive --agree-tos --email {{ ssl_email }}
+    - name: Test nginx configuration after SSL setup
+      command: nginx -t
       become: true
-      when: domain_name is defined and ssl_email is defined
 
   become: true
