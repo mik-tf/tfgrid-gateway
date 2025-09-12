@@ -20,8 +20,8 @@ server {
     listen 80;
     server_name {{ domain_name | default('_') }};
 
-    # Redirect HTTP to HTTPS when SSL is enabled
-    {% if enable_ssl | default(false) %}
+    # Redirect HTTP to HTTPS when SSL is enabled and certificates exist
+    {% if enable_ssl | default(false) and ssl_cert_exists | default(false) %}
     return 301 https://$server_name$request_uri;
     {% endif %}
 
@@ -59,7 +59,7 @@ server {
     }
 }
 
-{% if enable_ssl | default(false) %}
+{% if enable_ssl | default(false) and ssl_cert_exists | default(false) %}
 # SSL server block (only included when certificates exist)
 # This block is conditionally included based on certificate availability
 server {

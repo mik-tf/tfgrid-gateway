@@ -82,6 +82,11 @@
       register: ssl_cert
       become: true
 
+    - name: Set SSL certificate status fact
+      set_fact:
+        ssl_cert_exists: "{{ ssl_cert.stat.exists | default(false) }}"
+      when: domain_name is defined
+
     - name: Stop nginx for certificate challenge
       systemd:
         name: nginx
