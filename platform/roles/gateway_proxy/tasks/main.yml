@@ -120,10 +120,21 @@
         - not ssl_cert.stat.exists
         - ssl_staging | default(false) | bool == true
 
-    - name: Start nginx after certificate generation
+    - name: Regenerate nginx configuration with SSL enabled
+      template:
+        src: nginx-gateway.conf.j2
+        dest: /etc/nginx/sites-available/gateway
+        mode: '0644'
+      become: true
+      notify: reload nginx
+      when:
+        - domain_name is defined
+        - ssl_cert.stat.exists
+
+    - name: Reload nginx to enable SSL configuration
       systemd:
         name: nginx
-        state: started
+        state: reloaded
       become: true
       when:
         - domain_name is defined

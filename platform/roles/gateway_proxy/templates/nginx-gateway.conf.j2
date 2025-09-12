@@ -1,18 +1,23 @@
 upstream backend_http {
 {% for host in groups['internal'] %}
     # WireGuard backend (always included)
-    server {{ hostvars[host]['wireguard_ip'] }}:80;
+    server {{ hostvars[host]['wireguard_ip'] }}:{{ hostvars[host]['vm_port'] }};
 
     {% if network_mode in ['mycelium-only', 'both'] %}
     # Mycelium backend
-    server [{{ hostvars[host]['mycelium_ip'] }}]:80;
+    server [{{ hostvars[host]['mycelium_ip'] }}]:{{ hostvars[host]['vm_port'] }};
     {% endif %}
 {% endfor %}
 }
 
 upstream backend_https {
 {% for host in groups['internal'] %}
-    server {{ hostvars[host]['internal_ip'] | default(host) }}:443;
+    # Use same ports for HTTPS as HTTP (VMs don't have separate SSL)
+    server {{ hostvars[host]['wireguard_ip'] }}:{{ hostvars[host]['vm_port'] }};
+
+    {% if network_mode in ['mycelium-only', 'both'] %}
+    server [{{ hostvars[host]['mycelium_ip'] }}]:{{ hostvars[host]['vm_port'] }};
+    {% endif %}
 {% endfor %}
 }
 
@@ -94,9 +99,9 @@ server {
     add_header Referrer-Policy "no-referrer-when-downgrade" always;
     add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
 
-    # Proxy settings
+    # Proxy settings (SSL termination - backend still uses HTTP)
     location / {
-        proxy_pass https://backend_https;
+        proxy_pass http://backend_http;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
