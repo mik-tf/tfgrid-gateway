@@ -160,8 +160,11 @@ Internet → Gateway Public IP → HAProxy → Nginx → Internal VMs
 # Network mode selection
 export NETWORK_MODE=both  # Options: wireguard-only, mycelium-only, both
 
-# Ansible connectivity preference (existing)
-export MAIN_NETWORK=wireguard  # Options: wireguard, mycelium
+# Ansible connectivity preference
+export MAIN_NETWORK=wireguard  # Options: public, wireguard, mycelium
+
+# Inter-node network for uniform communication between nodes
+export INTER_NODE_NETWORK=wireguard  # Options: wireguard, mycelium
 
 # Security features
 export DISABLE_PORT_FORWARDING=false  # Options: true, false

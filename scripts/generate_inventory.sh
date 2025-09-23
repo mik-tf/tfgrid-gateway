@@ -22,6 +22,7 @@ fi
 MAIN_NETWORK="${MAIN_NETWORK:-wireguard}"
 NETWORK_MODE="${NETWORK_MODE:-wireguard-only}"
 GATEWAY_TYPE="${GATEWAY_TYPE:-gateway_nat}"
+INTER_NODE_NETWORK="${INTER_NODE_NETWORK:-wireguard}"
 
 echo -e "${GREEN}Generating Ansible inventory from Terraform outputs${NC}"
 if [[ -f "$PROJECT_DIR/.env" ]]; then
@@ -30,6 +31,7 @@ fi
 echo -e "${YELLOW}Using MAIN_NETWORK: ${MAIN_NETWORK}${NC}"
 echo -e "${YELLOW}Using NETWORK_MODE: ${NETWORK_MODE}${NC}"
 echo -e "${YELLOW}Using GATEWAY_TYPE: ${GATEWAY_TYPE}${NC}"
+echo -e "${YELLOW}Using INTER_NODE_NETWORK: ${INTER_NODE_NETWORK}${NC}"
 
 # Check if Terraform state exists
 if [[ ! -f "$INFRASTRUCTURE_DIR/terraform.tfstate" ]]; then
@@ -53,13 +55,22 @@ INTERNAL_MYCELIUM_IPS=$(tofu output -json internal_mycelium_ips 2>/dev/null || e
 # Generate inventory file
 INVENTORY_FILE="$PLATFORM_DIR/inventory.ini"
 
+# Determine gateway ansible_host based on MAIN_NETWORK
+if [[ "$MAIN_NETWORK" == "public" ]]; then
+    GATEWAY_ANSIBLE_HOST=${GATEWAY_PUBLIC_IP}
+elif [[ "$MAIN_NETWORK" == "wireguard" ]]; then
+    GATEWAY_ANSIBLE_HOST=${GATEWAY_WIREGUARD_IP}
+else # mycelium
+    GATEWAY_ANSIBLE_HOST=${GATEWAY_MYCELIUM_IP}
+fi
+
 cat > "$INVENTORY_FILE" << EOF
 [all:vars]
 ansible_user=root
 ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 
 [gateway]
-gateway ansible_host=${GATEWAY_PUBLIC_IP} wireguard_ip=${GATEWAY_WIREGUARD_IP} mycelium_ip=${GATEWAY_MYCELIUM_IP} internal_ip=${GATEWAY_WIREGUARD_IP}
+gateway ansible_host=${GATEWAY_ANSIBLE_HOST} wireguard_ip=${GATEWAY_WIREGUARD_IP} mycelium_ip=${GATEWAY_MYCELIUM_IP} internal_ip=${GATEWAY_WIREGUARD_IP}
 
 [internal]
 EOF
@@ -71,12 +82,19 @@ while IFS= read -r line; do
     wireguard_ip=$(echo "$line" | awk -F'=' '{print $2}' | awk '{print $1}')
     mycelium_ip=$(echo "$INTERNAL_MYCELIUM_IPS" | jq -r ".\"$vm_id\"")
 
+    # Set internal_ip based on INTER_NODE_NETWORK
+    if [[ "$INTER_NODE_NETWORK" == "wireguard" ]]; then
+        internal_ip=$wireguard_ip
+    else
+        internal_ip=$mycelium_ip
+    fi
+
     if [[ "$MAIN_NETWORK" == "mycelium" ]]; then
         # Use mycelium IP for ansible_host
-        echo "$vm_id ansible_host=$mycelium_ip wireguard_ip=$wireguard_ip mycelium_ip=$mycelium_ip vm_port=$(echo "$line" | awk -F'vm_port=' '{print $2}' | awk '{print $1}') vm_id=$vm_id" >> "$INVENTORY_FILE"
+        echo "$vm_id ansible_host=$mycelium_ip wireguard_ip=$wireguard_ip mycelium_ip=$mycelium_ip internal_ip=$internal_ip vm_port=$(echo "$line" | awk -F'vm_port=' '{print $2}' | awk '{print $1}') vm_id=$vm_id" >> "$INVENTORY_FILE"
     else
-        # Use wireguard IP for ansible_host (default)
-        echo "$vm_id ansible_host=$wireguard_ip wireguard_ip=$wireguard_ip mycelium_ip=$mycelium_ip vm_port=$(echo "$line" | awk -F'vm_port=' '{print $2}' | awk '{print $1}') vm_id=$vm_id" >> "$INVENTORY_FILE"
+        # Use wireguard IP for ansible_host (default, since public not applicable for internal)
+        echo "$vm_id ansible_host=$wireguard_ip wireguard_ip=$wireguard_ip mycelium_ip=$mycelium_ip internal_ip=$internal_ip vm_port=$(echo "$line" | awk -F'vm_port=' '{print $2}' | awk '{print $1}') vm_id=$vm_id" >> "$INVENTORY_FILE"
     fi
 done
 
@@ -144,6 +162,7 @@ EOF
 echo -e "${GREEN}Inventory generated successfully!${NC}"
 echo "Inventory file: $INVENTORY_FILE"
 echo "Main network (Ansible): $MAIN_NETWORK"
+echo "Inter-node network: $INTER_NODE_NETWORK"
 echo "Network mode (Website): $NETWORK_MODE"
 echo ""
 echo -e "${YELLOW}Available gateway types:${NC}"
@@ -151,8 +170,13 @@ echo "  - gateway_nat: NAT-based gateway with nftables"
 echo "  - gateway_proxy: Proxy-based gateway with HAProxy/Nginx"
 echo ""
 echo -e "${YELLOW}Available network types (Ansible connectivity):${NC}"
+echo "  - public: Use public IP for gateway Ansible connectivity (internal uses wireguard/mycelium)"
 echo "  - wireguard: Use WireGuard VPN for Ansible connectivity (default)"
 echo "  - mycelium: Use Mycelium IPv6 overlay for Ansible connectivity"
+echo ""
+echo -e "${YELLOW}Available inter-node networks:${NC}"
+echo "  - wireguard: Use WireGuard for node-to-node communication (default)"
+echo "  - mycelium: Use Mycelium for node-to-node communication"
 echo ""
 echo -e "${YELLOW}Available network modes (Website hosting):${NC}"
 echo "  - wireguard-only: Websites on WireGuard only (default)"
@@ -164,6 +188,7 @@ echo "  export GATEWAY_TYPE=gateway_proxy"
 echo "  ansible-playbook -i platform/inventory.ini platform/site.yml"
 echo ""
 echo -e "${YELLOW}To configure network settings:${NC}"
-echo "  export MAIN_NETWORK=mycelium"
+echo "  export MAIN_NETWORK=public"
+echo "  export INTER_NODE_NETWORK=mycelium"
 echo "  export NETWORK_MODE=both"
 echo "  make inventory"
