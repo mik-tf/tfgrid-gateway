@@ -42,7 +42,7 @@ The gateway VMs live within the same network as your internal VMs, providing sec
 - [jq](https://stedolan.github.io/jq/) installed
 - ThreeFold account with sufficient TFT balance
 
-**Important**: WireGuard must be installed and `make wireguard` must be run before Ansible can connect to the internal VMs.
+**Important**: If using WireGuard, it must be installed and `make wireguard` must be run before Ansible can connect to the internal VMs.
 
 ### Installing Ansible Dependencies
 
