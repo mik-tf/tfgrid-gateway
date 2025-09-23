@@ -33,20 +33,6 @@ defaults
     errorfile 503 /etc/haproxy/errors/503.http
     errorfile 504 /etc/haproxy/errors/504.http
 
-# HTTP frontend
-frontend http_frontend
-    bind *:80
-    mode http
-    option httplog
-    default_backend http_backend
-
-# HTTPS frontend
-frontend https_frontend
-    bind *:443
-    mode http
-    option httplog
-    default_backend https_backend
-
 # TCP proxy frontends
 {% for port in proxy_ports | default([8080, 8443]) %}
 frontend tcp_frontend_{{ port }}
@@ -65,26 +51,12 @@ frontend udp_frontend_{{ port }}
 {% endfor %}
 
 # Backends
-backend http_backend
-    mode http
-    balance roundrobin
-{% for host in groups['internal'] %}
-    server {{ host }} {{ hostvars[host]['internal_ip'] | default(host) }}:80 check
-{% endfor %}
-
-backend https_backend
-    mode http
-    balance roundrobin
-{% for host in groups['internal'] %}
-    server {{ host }} {{ hostvars[host]['internal_ip'] | default(host) }}:443 check
-{% endfor %}
-
 {% for port in proxy_ports | default([8080, 8443]) %}
 backend tcp_backend_{{ port }}
     mode tcp
     balance roundrobin
 {% for host in groups['internal'] %}
-    server {{ host }}_{{ port }} {{ hostvars[host]['internal_ip'] | default(host) }}:{{ port }} check
+    server {{ host }}_{{ port }} {% if ':' in hostvars[host]['internal_ip'] | default(host) %}[{{ hostvars[host]['internal_ip'] | default(host) }}]{% else %}{{ hostvars[host]['internal_ip'] | default(host) }}{% endif %}:{{ port }} check
 {% endfor %}
 {% endfor %}
 
@@ -93,7 +65,7 @@ backend udp_backend_{{ port }}
     mode udp
     balance roundrobin
 {% for host in groups['internal'] %}
-    server {{ host }}_{{ port }} {{ hostvars[host]['internal_ip'] | default(host) }}:{{ port }} check
+    server {{ host }}_{{ port }} {% if ':' in hostvars[host]['internal_ip'] | default(host) %}[{{ hostvars[host]['internal_ip'] | default(host) }}]{% else %}{{ hostvars[host]['internal_ip'] | default(host) }}{% endif %}:{{ port }} check
 {% endfor %}
 {% endfor %}
 

@@ -105,7 +105,22 @@ connect:
 # Demo commands
 demo:
 	@echo "Deploying gateway with demo status page..."
-	@if [ -f .env ]; then set -a && . ./.env && set +a; fi; cd platform && ansible-playbook -i inventory.ini --extra-vars "gateway_type=$${GATEWAY_TYPE:-gateway_nat} network_mode=$${NETWORK_MODE:-wireguard-only} enable_demo=true configure_internal_vms=true enable_vm_demo=true" site.yml
+	@if [ -f .env ]; then \
+		set -a && . ./.env && set +a && \
+		cd platform && ansible-playbook -i inventory.ini \
+			--extra-vars "gateway_type=$${GATEWAY_TYPE:-gateway_nat} \
+			              network_mode=$${NETWORK_MODE:-wireguard-only} \
+			              main_network=$${MAIN_NETWORK:-wireguard} \
+			              inter_node_network=$${INTER_NODE_NETWORK:-wireguard} \
+			              domain_name=$${DOMAIN_NAME} \
+			              enable_ssl=$${ENABLE_SSL:-false} \
+			              enable_demo=true \
+			              configure_internal_vms=true \
+			              enable_vm_demo=true" \
+			site.yml; \
+	else \
+		cd platform && ansible-playbook -i inventory.ini --extra-vars "gateway_type=$${GATEWAY_TYPE:-gateway_nat} network_mode=$${NETWORK_MODE:-wireguard-only} enable_demo=true configure_internal_vms=true enable_vm_demo=true" site.yml; \
+	fi
 
 demo-status:
 	@./scripts/demo-status.sh
