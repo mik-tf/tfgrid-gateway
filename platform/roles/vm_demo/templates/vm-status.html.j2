@@ -376,21 +376,32 @@
                     <span class="status-icon">✅</span>
                     <span class="status-text"><strong>VM Web Service:</strong> Nginx running on internal port {{ vm_port }} ({{ wireguard_ip }}:{{ vm_port }})</span>
                 </li>
+                {% if hostvars['gateway']['gateway_type'] == 'gateway_proxy' %}
                 <li class="status-item success">
                     <span class="status-icon">✅</span>
                     <span class="status-text"><strong>Gateway Proxy:</strong> HAProxy forwards external requests to this VM</span>
                 </li>
                 <li class="status-item info">
                     <span class="status-icon">🌐</span>
-                    <span class="status-text"><strong>How It Works:</strong> External traffic → Gateway HAProxy → VM internal port {{ vm_port }}</span>
+                    <span class="status-text"><strong>How Proxy Works:</strong> External traffic → Gateway HAProxy → VM internal port {{ vm_port }}</span>
                 </li>
+                {% else %}
+                <li class="status-item success">
+                    <span class="status-icon">✅</span>
+                    <span class="status-text"><strong>Gateway NAT:</strong> Port forwarding maps external port to VM internal port</span>
+                </li>
+                <li class="status-item info">
+                    <span class="status-icon">🌐</span>
+                    <span class="status-text"><strong>How NAT Works:</strong> External traffic → Gateway NAT → VM internal port {{ vm_port }}</span>
+                </li>
+                {% endif %}
                 <li class="status-item info">
                     <span class="status-icon">🔒</span>
                     <span class="status-text"><strong>Security:</strong> Direct VM access blocked; all traffic goes through secure gateway</span>
                 </li>
                 <li class="status-item info">
                     <span class="status-icon">📚</span>
-                    <span class="status-text"><strong>ThreeFold Grid:</strong> IPv6-only VM gets IPv4 internet access via gateway proxy</span>
+                    <span class="status-text"><strong>ThreeFold Grid:</strong> IPv6-only VM gets IPv4 internet access via gateway {{ 'proxy' if hostvars['gateway']['gateway_type'] == 'gateway_proxy' else 'NAT' }}</span>
                 </li>
             </ul>
         </div>
