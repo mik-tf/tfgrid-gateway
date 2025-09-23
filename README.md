@@ -424,8 +424,8 @@ The tfgrid-gateway implements **SSL termination at the gateway level** for optim
 │   Client        │    │   Gateway        │    │   Backend VMs   │
 │   Browser       │    │   (SSL Gateway)  │    │   (HTTP Only)   │
 ├─────────────────┤    ├──────────────────┤    ├─────────────────┤
-│ HTTPS (Port 443)│───▶│ SSL Termination │───▶│ HTTP (Ports     │
-│ Encrypted       │    │ Let's Encrypt   │    │ 8001,8002,8003) │
+│ HTTPS (Port 443)│───▶│ SSL Termination  │───▶│ HTTP (Ports     │
+│ Encrypted       │    │ Let's Encrypt    │    │ 8001,8002,8003) │
 │ Traffic         │    │ Certificate      │    │ Unencrypted     │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
 ```
