@@ -90,6 +90,8 @@
 
 # Architecture Overview
 
+Here's how tfgrid-gateway connects your appcations to the internet: public IPv4 gateway routes traffic through secure networks to internal IPv6 VMs.
+
 ```mermaid
 graph TB
     subgraph "ThreeFold Grid"
@@ -233,11 +235,32 @@ graph TB
 - **Continuous availability**: Internal VM websites remain accessible even if one network goes down
 - **Load balancing**: Traffic distributed across both networks for optimal performance
 
+## Network Flow
+
+Here's how a typical request flows through tfgrid-gateway: client sends HTTP request, gateway handles SSL if enabled, encrypts and forwards through secure networks to internal VMs.
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Gateway
+    participant NET as WireGuard/Mycelium
+    participant VM as Internal VM
+
+    Client->>Gateway: HTTP Request
+    Gateway->>Gateway: SSL Termination (if enabled)
+    Gateway->>NET: Encrypted Forward
+    NET->>VM: Decrypted Request
+    VM->>NET: Response
+    NET->>Gateway: Encrypted Response
+    Gateway->>Client: HTTP Response
+```
 ---
 
 # Security Architecture
 
 ## Multi-Layer Protection
+
+Here's how client requests flow through tfgrid-gateway's security layers: a client browser connects to the IPv4 gateway, passes through the firewall and routing layers, then flows through encrypted networks to reach the internal VMs.
 
 ```mermaid
 graph LR
@@ -337,27 +360,6 @@ DOMAIN_NAME=mygateway.com    # for SSL
 
 ---
 
-# Real-World Scenarios
-
-## Practical Applications
-
-**Scenario 1: Web Application**
-- Deploy Next.js app on internal VM
-- Use proxy gateway with SSL
-- Access via `https://myapp.com`
-
-**Scenario 2: API Backend**
-- Multiple microservices on different VMs
-- Load balancing across networks
-- Secure internal communication
-
-**Scenario 3: Development Environment**
-- Quick NAT setup for testing
-- Multiple VMs for different services
-- Easy teardown and recreation
-
----
-
 # Getting Started
 
 ## Quick Start Guide
@@ -439,26 +441,4 @@ make
 export DOMAIN_NAME=mygateway.example.com
 export ENABLE_SSL=true
 make ssl-demo
-```
-
----
-
-# Appendix: Architecture Diagrams
-
-## Network Flow
-
-```mermaid
-sequenceDiagram
-    participant Client
-    participant Gateway
-    participant NET as WireGuard/Mycelium
-    participant VM as Internal VM
-
-    Client->>Gateway: HTTP Request
-    Gateway->>Gateway: SSL Termination (if enabled)
-    Gateway->>NET: Encrypted Forward
-    NET->>VM: Decrypted Request
-    VM->>NET: Response
-    NET->>Gateway: Encrypted Response
-    Gateway->>Client: HTTP Response
 ```
