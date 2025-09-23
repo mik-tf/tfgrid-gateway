@@ -34,7 +34,7 @@
     msg: |
       Debug variables:
       gateway_type: {{ gateway_type | default('gateway_nat') }}
-      network: {{ network | default('NOT_SET') }}
+      network: {{ tfgrid_network | default('test') }}
       GATEWAY_TYPE env: {{ lookup('env', 'GATEWAY_TYPE') | default('NOT_SET') }}
       NETWORK env: {{ lookup('env', 'NETWORK') | default('NOT_SET') }}
       internal_vms: {{ internal_vms | default('NOT_SET') }}
@@ -82,7 +82,7 @@
       ===================================
 
       Gateway Type: {{ gateway_type | default('gateway_nat') }}
-      Network: {{ network | default('test') }}
+      Network: {{ tfgrid_network | default('test') }}
       Public IPv4: {{ ansible_default_ipv4.address }}
       Hostname: {{ ansible_hostname }}
 

@@ -42,7 +42,7 @@ The gateway VMs live within the same network as your internal VMs, providing sec
 - [jq](https://stedolan.github.io/jq/) installed
 - ThreeFold account with sufficient TFT balance
 
-**Important**: WireGuard must be installed and `make wireguard` must be run before Ansible can connect to the internal VMs.
+**Important**: If using WireGuard, it must be installed and `make wireguard` must be run before Ansible can connect to the internal VMs.
 
 ### Installing Ansible Dependencies
 
@@ -91,6 +91,7 @@ nano .env
 # Example .env file:
 # GATEWAY_TYPE=gateway_nat
 # MAIN_NETWORK=wireguard
+# INTER_NODE_NETWORK=wireguard
 # NETWORK_MODE=both
 ```
 
@@ -453,25 +454,34 @@ The tfgrid-gateway implements **SSL termination at the gateway level** for optim
 
 ### Network Types
 
-Choose your network connectivity for Ansible by setting the `MAIN_NETWORK` environment variable:
+Choose your network connectivity by setting the environment variables:
 
 ```bash
-# WireGuard VPN (default)
-export MAIN_NETWORK=wireguard
-make inventory
+# Ansible connectivity (gateway uses public, internal uses wireguard/mycelium)
+export MAIN_NETWORK=public          # Use public IP for gateway Ansible SSH
+export MAIN_NETWORK=wireguard       # Use WireGuard for Ansible SSH (default)
+export MAIN_NETWORK=mycelium        # Use Mycelium IPv6 for Ansible SSH
 
-# Mycelium IPv6 overlay network
-export MAIN_NETWORK=mycelium
+# Inter-node communication (uniform across all nodes)
+export INTER_NODE_NETWORK=wireguard # Use WireGuard for node-to-node (default)
+export INTER_NODE_NETWORK=mycelium  # Use Mycelium for node-to-node
+
 make inventory
 ```
 
 **Available Network Types:**
-- `wireguard`: Use WireGuard VPN for Ansible SSH connectivity (default, maintains current behavior)
-- `mycelium`: Use Mycelium IPv6 overlay network for Ansible SSH connectivity
+- `MAIN_NETWORK`: Controls Ansible SSH connectivity
+  - `public`: Gateway uses public IPv4, internal VMs use wireguard/mycelium
+  - `wireguard`: All hosts use WireGuard VPN for Ansible SSH (default)
+  - `mycelium`: All hosts use Mycelium IPv6 overlay for Ansible SSH
+- `INTER_NODE_NETWORK`: Controls uniform node-to-node communication
+  - `wireguard`: Use WireGuard for inter-node traffic (default)
+  - `mycelium`: Use Mycelium for inter-node traffic
 
 **When to use each network:**
 - **WireGuard**: More reliable for complex network setups, better performance for large deployments
 - **Mycelium**: Useful when WireGuard has connectivity issues, provides IPv6-native connectivity
+- **Public (Ansible only)**: Use public IP for gateway SSH access when overlay networks are unstable
 
 ### Network Modes
 

@@ -3,7 +3,7 @@
 gateway_type: "{{ lookup('env', 'GATEWAY_TYPE') | default('gateway_nat', true) }}"
 
 # Network configuration
-network_mode: "mycelium-only"
+network_mode: "both"
 
 # Port forwarding (for NAT gateway)
 port_forwards: []
