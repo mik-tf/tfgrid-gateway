@@ -100,7 +100,7 @@
       command: >
         certbot certonly --standalone -d {{ domain_name }}
         --non-interactive --agree-tos
-        --email {{ ssl_email | default('admin@' + domain_name) }}
+        --email {{ ssl_email if ssl_email else 'admin@' + domain_name }}
       become: true
       when:
         - domain_name is defined
@@ -112,13 +112,25 @@
       command: >
         certbot certonly --standalone -d {{ domain_name }}
         --staging --non-interactive --agree-tos
-        --email {{ ssl_email | default('admin@' + domain_name) }}
+        --email {{ ssl_email if ssl_email else 'admin@' + domain_name }}
       become: true
       when:
         - domain_name is defined
         - ssl_email is defined or True
         - not ssl_cert.stat.exists
         - ssl_staging | default(false) | bool == true
+
+    - name: Re-check SSL certificate status after generation
+      stat:
+        path: "/etc/letsencrypt/live/{{ domain_name }}/fullchain.pem"
+      register: ssl_cert
+      become: true
+      when: domain_name is defined
+
+    - name: Update SSL certificate status fact
+      set_fact:
+        ssl_cert_exists: "{{ ssl_cert.stat.exists | default(false) }}"
+      when: domain_name is defined
 
     - name: Regenerate nginx configuration with SSL enabled
       template:
