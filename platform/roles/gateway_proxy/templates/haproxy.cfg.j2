@@ -34,7 +34,8 @@ defaults
     errorfile 504 /etc/haproxy/errors/504.http
 
 # TCP proxy frontends
-{% for port in proxy_ports | default([8080, 8443]) %}
+{% for port_index in range(groups['internal'] | default([]) | length) %}
+{% set port = 8080 + port_index %}
 frontend tcp_frontend_{{ port }}
     bind *:{{ port }}
     mode tcp
@@ -51,22 +52,22 @@ frontend udp_frontend_{{ port }}
 {% endfor %}
 
 # Backends
-{% for port in proxy_ports | default([8080, 8443]) %}
+{% for port_index in range(groups['internal'] | default([]) | length) %}
+{% set port = 8080 + port_index %}
+{% set host = (groups['internal'] | default([]))[port_index] %}
 backend tcp_backend_{{ port }}
     mode tcp
     balance roundrobin
-{% for host in groups['internal'] %}
-    server {{ host }}_{{ port }} {% if ':' in hostvars[host]['internal_ip'] | default(host) %}[{{ hostvars[host]['internal_ip'] | default(host) }}]{% else %}{{ hostvars[host]['internal_ip'] | default(host) }}{% endif %}:{{ port }} check
-{% endfor %}
+    server {{ host }}_{{ port }} {% if ':' in hostvars[host]['internal_ip'] | default(host) %}[{{ hostvars[host]['internal_ip'] | default(host) }}]{% else %}{{ hostvars[host]['internal_ip'] | default(host) }}{% endif %}:{{ hostvars[host]['vm_port'] | default(port) }} check
 {% endfor %}
 
-{% for port in udp_ports | default([]) %}
+{% for port_index in range(udp_ports | default([]) | length) %}
+{% set port = (udp_ports | default([]))[port_index] %}
+{% set host = (groups['internal'] | default([]))[port_index] %}
 backend udp_backend_{{ port }}
     mode udp
     balance roundrobin
-{% for host in groups['internal'] %}
-    server {{ host }}_{{ port }} {% if ':' in hostvars[host]['internal_ip'] | default(host) %}[{{ hostvars[host]['internal_ip'] | default(host) }}]{% else %}{{ hostvars[host]['internal_ip'] | default(host) }}{% endif %}:{{ port }} check
-{% endfor %}
+    server {{ host }}_{{ port }} {% if ':' in hostvars[host]['internal_ip'] | default(host) %}[{{ hostvars[host]['internal_ip'] | default(host) }}]{% else %}{{ hostvars[host]['internal_ip'] | default(host) }}{% endif %}:{{ hostvars[host]['vm_port'] | default(port) }} check
 {% endfor %}
 
 # Stats page

@@ -13,4 +13,8 @@ gateway_type: "{{ lookup('env', 'GATEWAY_TYPE') | default('gateway_nat', true) }
 tfgrid_network: "test"
 
 # Mycelium configuration
-mycelium_enabled: true
+mycelium_enabled: "{{ lookup('env', 'INTER_NODE_NETWORK') | default('wireguard', true) == 'mycelium' }}"
+
+# HAProxy proxy ports (dynamic - one port per VM, starting from 8080)
+# Similar to NAT gateway: 8080->VM1, 8081->VM2, 8082->VM3, etc.
+proxy_ports: "{{ (groups['internal'] | default([]) | length) | range(8080, 8080 + (groups['internal'] | default([]) | length) - 1) | list if (groups['internal'] | default([]) | length) > 0 else [] }}"
