@@ -120,6 +120,18 @@
         - not ssl_cert.stat.exists
         - ssl_staging | default(false) | bool == true
 
+    - name: Re-check SSL certificate status after generation
+      stat:
+        path: "/etc/letsencrypt/live/{{ domain_name }}/fullchain.pem"
+      register: ssl_cert
+      become: true
+      when: domain_name is defined
+
+    - name: Update SSL certificate status fact
+      set_fact:
+        ssl_cert_exists: "{{ ssl_cert.stat.exists | default(false) }}"
+      when: domain_name is defined
+
     - name: Regenerate nginx configuration with SSL enabled
       template:
         src: nginx-gateway.conf.j2
