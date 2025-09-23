@@ -12,6 +12,12 @@ This repository combines infrastructure provisioning via Terraform/OpenTofu with
 
 ![TFGrid Internal VM Website](./img/tfgrid-gateway-picture2.png)
 
+![TFGrid Internal VM Website](./img/tfgrid-gateway-picture3.png)
+
+![TFGrid Internal VM Website](./img/tfgrid-gateway-picture4.png)
+
+![TFGrid Internal VM Website](./img/tfgrid-gateway-picture5.png)
+
 ### Features
 
 - **Public IPv4 Gateway**: VMs with dedicated public IPv4 addresses for internet connectivity
