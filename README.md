@@ -8,15 +8,15 @@ This repository combines infrastructure provisioning via Terraform/OpenTofu with
 
 ### Preview
 
-![TFGrid Gateway Website](./img/tfgrid-gateway-picture1.png)
+![TFGrid Gateway Website](./img/tfgrid-gateway-picture-1.png)
 
-![TFGrid Internal VM Website](./img/tfgrid-gateway-picture2.png)
+![TFGrid Internal VM Website](./img/tfgrid-gateway-picture-2.png)
 
-![TFGrid Internal VM Website](./img/tfgrid-gateway-picture3.png)
+![TFGrid Internal VM Website](./img/tfgrid-gateway-picture-3.png)
 
-![TFGrid Internal VM Website](./img/tfgrid-gateway-picture4.png)
+![TFGrid Internal VM Website](./img/tfgrid-gateway-picture-4.png)
 
-![TFGrid Internal VM Website](./img/tfgrid-gateway-picture5.png)
+![TFGrid Internal VM Website](./img/tfgrid-gateway-picture-5.png)
 
 ### Features
 
