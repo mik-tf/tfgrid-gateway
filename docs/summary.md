@@ -1,5 +1,7 @@
 # ThreeFold Grid IPv4 Gateway
 
+We present a summary of the ThreeFold Grid IPv4 Gateway.
+
 # The Challenge
 
 ## IPv4 Exhaustion & the IPv6 Transition
@@ -385,60 +387,3 @@ DOMAIN_NAME=mygateway.com    # for SSL
 
 - **IPv4 Address**: `http://YOUR_GATEWAY_IP`
 - **Domain Name**: `https://yourdomain.com` (with SSL)
-
----
-
-# Advanced Features
-
-## Production-Ready Capabilities
-
-- **SSL/TLS**: Automatic Let's Encrypt certificates
-- **Monitoring**: Built-in health checks and logging
-- **Scaling**: Support for multiple internal VMs
-- **Backup**: Configuration and certificate management
-- **Updates**: Rolling updates and maintenance
-
----
-
-# Appendix
-
-## Technical Details
-
-### Infrastructure Components
-- Terraform modules for VM provisioning
-- Ansible roles for configuration management
-- Makefile for orchestration
-
-### Network Architecture
-- WireGuard: Layer 3 VPN
-- Mycelium: End-to-end encrypted overlay
-- nftables: Modern firewall framework
-
-### Security Measures
-- SSH key authentication
-- Network segmentation
-- Encrypted communication channels
-
----
-
-# Appendix: Code Examples
-
-## Basic Deployment
-
-```bash
-# Environment setup
-export TF_VAR_mnemonic="$(cat ~/.config/threefold/mnemonic)"
-export GATEWAY_TYPE=gateway_proxy
-export NETWORK_MODE=both
-
-# Deploy
-make
-```
-
-## SSL Configuration
-
-```bash
-export DOMAIN_NAME=mygateway.example.com
-export ENABLE_SSL=true
-make ssl-demo
-```
